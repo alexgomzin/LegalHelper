@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test PDF Upload</h1>
+    <div class="form-group">
+        <input type="file" id="pdfFile" accept=".pdf" required>
+    </div>
+    <div class="button-group">
+        <button id="testSimpleEndpoint">Test Simple Endpoint</button>
+        <button id="testSimpleUpload">Test Simple Document Upload</button>
+        <button id="testFullUpload">Test Full Document Upload</button>
+    </div>
+    <div id="result">Results will appear here</div>
+
+    <script>
+        // Test simple endpoint
+        document.getElementById('testSimpleEndpoint').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing simple endpoint...';
+            
+            try {
+                const response = await fetch('/api/simple-upload', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Simple endpoint test: ${JSON.stringify(data)}`;
+                console.log('Simple endpoint response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Error:', error);
+            }
+        });
+        
+        // Test simple document upload
+        document.getElementById('testSimpleUpload').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Uploading to simple document upload endpoint...';
+            
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                resultDiv.innerHTML = 'Please select a file';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            try {
+                const response = await fetch('/api/simple-document-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Simple document upload response: ${JSON.stringify(data)}`;
+                console.log('Simple document upload response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Upload error:', error);
+            }
+        });
+        
+        // Test full document upload
+        document.getElementById('testFullUpload').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Uploading to full document upload endpoint...';
+            
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                resultDiv.innerHTML = 'Please select a file';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            try {
+                const response = await fetch('/api/upload-document', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `Full document upload response: ${JSON.stringify(data)}`;
+                console.log('Full document upload response:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Upload error:', error);
+            }
+        });
+    </script>
+</body>
+</html> 
