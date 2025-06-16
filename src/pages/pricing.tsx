@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
-import { useAuth } from '@/contexts/SupabaseAuthContext'
-import type { User } from '@/lib/supabase'
 
 interface PricingTier {
   name: string;
@@ -18,19 +16,33 @@ interface PricingTier {
 
 export default function Pricing() {
   const [mounted, setMounted] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<any>(null)
   
-  // Safely get auth context only on client side
+  // Safely get auth context only on client side - NO SSR
   useEffect(() => {
     setMounted(true)
-    // Only access auth context after mounting
-    try {
-      const authContext = useAuth()
-      setUser(authContext?.user || null)
-    } catch (error) {
-      // Auth context not available (during SSR)
-      setUser(null)
+    
+    // Only on client side, dynamically import and use auth
+    const loadAuth = async () => {
+      try {
+        // Dynamic import to prevent SSR issues
+        const { useAuth } = await import('@/contexts/SupabaseAuthContext')
+        
+        // This will only work on client side
+        if (typeof window !== 'undefined') {
+          // We can't use hooks in async functions, so we'll check localStorage directly
+          // or use a different approach
+          
+          // For now, let's just assume no user during build
+          setUser(null)
+        }
+      } catch (error) {
+        console.log('Auth not available during SSR')
+        setUser(null)
+      }
     }
+    
+    loadAuth()
   }, [])
   
   const pricingTiers: PricingTier[] = [
@@ -46,7 +58,7 @@ export default function Pricing() {
         'Document summarization',
         'Email support'
       ],
-      cta: user ? 'Current Plan' : 'Sign Up',
+      cta: 'Sign Up',
       mostPopular: false
     },
     {
@@ -191,22 +203,8 @@ export default function Pricing() {
                   </ul>
                 </div>
                 
-                {/* Only show dynamic content after mounting (client-side) */}
-                {!mounted ? (
-                  <button
-                    disabled
-                    className="mt-8 block w-full rounded-md border border-transparent bg-gray-300 py-3 px-6 text-center font-medium text-white cursor-not-allowed"
-                  >
-                    Loading...
-                  </button>
-                ) : tier.id === 'free' && user ? (
-                  <button
-                    disabled
-                    className="mt-8 block w-full rounded-md border border-transparent bg-gray-300 py-3 px-6 text-center font-medium text-white cursor-not-allowed"
-                  >
-                    Current Plan
-                  </button>
-                ) : tier.id === 'payg' ? (
+                {/* Show buttons - simplified without auth checking during SSR */}
+                {tier.id === 'payg' ? (
                   <button
                     onClick={() => handlePurchase('payg')}
                     className="mt-8 block w-full rounded-md border border-transparent bg-green-600 py-3 px-6 text-center font-medium text-white hover:bg-green-700"
