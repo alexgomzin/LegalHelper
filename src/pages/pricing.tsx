@@ -16,7 +16,15 @@ interface PricingTier {
 }
 
 export default function Pricing() {
-  const { user } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  const authContext = useAuth()
+  
+  // Safely access user only after component mounts (client-side)
+  const user = mounted ? authContext?.user : null
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   const pricingTiers: PricingTier[] = [
     {
@@ -82,9 +90,14 @@ export default function Pricing() {
   ]
   
   const handlePurchase = (tierId: string, productId?: string) => {
+    // Only run on client-side
+    if (!mounted) return
+    
     if (!user) {
       // Redirect to login if not authenticated
-      window.location.href = `/login?redirect=pricing&plan=${tierId}`
+      if (typeof window !== 'undefined') {
+        window.location.href = `/login?redirect=pricing&plan=${tierId}`
+      }
       return
     }
 
@@ -100,8 +113,10 @@ export default function Pricing() {
       checkoutUrl += `&product=${productId}`
     }
     
-    // Use router.push for client-side navigation
-    window.location.href = checkoutUrl
+    // Use window.location for client-side navigation
+    if (typeof window !== 'undefined') {
+      window.location.href = checkoutUrl
+    }
   }
   
   return (
@@ -169,7 +184,15 @@ export default function Pricing() {
                   </ul>
                 </div>
                 
-                {tier.id === 'free' && user ? (
+                {/* Only show dynamic content after mounting (client-side) */}
+                {!mounted ? (
+                  <button
+                    disabled
+                    className="mt-8 block w-full rounded-md border border-transparent bg-gray-300 py-3 px-6 text-center font-medium text-white cursor-not-allowed"
+                  >
+                    Loading...
+                  </button>
+                ) : tier.id === 'free' && user ? (
                   <button
                     disabled
                     className="mt-8 block w-full rounded-md border border-transparent bg-gray-300 py-3 px-6 text-center font-medium text-white cursor-not-allowed"

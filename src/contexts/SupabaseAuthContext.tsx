@@ -41,10 +41,13 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
       try {
         // If using mock auth, check localStorage instead
         if (useMockAuth) {
-          const mockUser = localStorage.getItem('mock_user')
-          if (mockUser) {
-            const userData = JSON.parse(mockUser)
-            setUser(userData)
+          // Only access localStorage on client side
+          if (typeof window !== 'undefined') {
+            const mockUser = localStorage.getItem('mock_user')
+            if (mockUser) {
+              const userData = JSON.parse(mockUser)
+              setUser(userData)
+            }
           }
           setIsLoading(false)
           return
@@ -124,7 +127,9 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
           created_at: new Date().toISOString()
         }
         // Store in localStorage but don't log in yet
-        localStorage.setItem('mock_user_registered', JSON.stringify(mockUser))
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mock_user_registered', JSON.stringify(mockUser))
+        }
         setIsLoading(false)
         return
       }
@@ -165,7 +170,11 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
       if (useMockAuth) {
         // Mock sign in
         // Check registration or use a dummy user for testing
-        const registeredUser = localStorage.getItem('mock_user_registered')
+        let registeredUser = null
+        if (typeof window !== 'undefined') {
+          registeredUser = localStorage.getItem('mock_user_registered')
+        }
+        
         const mockUser = registeredUser 
           ? JSON.parse(registeredUser)
           : {
@@ -176,7 +185,9 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
             }
         
         // Store user in localStorage
-        localStorage.setItem('mock_user', JSON.stringify(mockUser))
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mock_user', JSON.stringify(mockUser))
+        }
         setUser(mockUser)
         setIsLoading(false)
         return
@@ -218,7 +229,9 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
     try {
       if (useMockAuth) {
         // Mock sign out
-        localStorage.removeItem('mock_user')
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('mock_user')
+        }
         setUser(null)
         setSession(null)
         setIsLoading(false)
