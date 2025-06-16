@@ -44,7 +44,7 @@ export default function Checkout() {
     script.onload = () => {
       if (window.Paddle) {
         window.Paddle.Setup({
-          vendor: parseInt(process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID || '12345'),
+          vendor: process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID || '12345',
           eventCallback: function(data: any) {
             if (data.event === 'Checkout.Complete') {
               setIsProcessing(true);
@@ -107,19 +107,19 @@ export default function Checkout() {
     if (!productId) {
       switch (selectedPlan) {
         case 'payg':
-          productId = process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || 'PAY_PER_DOCUMENT';
+          productId = 'PAY_PER_DOCUMENT';
           break;
         case 'pack5':
-          productId = process.env.NEXT_PUBLIC_PADDLE_5_PACK || 'PRODUCT_ID_5_PACK';
+          productId = 'PRODUCT_ID_5_PACK';
           break;
         case 'pack15':
-          productId = process.env.NEXT_PUBLIC_PADDLE_15_PACK || 'PRODUCT_ID_15_PACK';
+          productId = 'PRODUCT_ID_15_PACK';
           break;
         case 'pack30':
-          productId = process.env.NEXT_PUBLIC_PADDLE_30_PACK || 'PRODUCT_ID_30_PACK';
+          productId = 'PRODUCT_ID_30_PACK';
           break;
         case 'subscription':
-          productId = process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || 'PRODUCT_ID_50_PACK_SUBSCRIPTION';
+          productId = 'PRODUCT_ID_50_PACK_SUBSCRIPTION';
           break;
         default:
           alert('Invalid plan selected');
