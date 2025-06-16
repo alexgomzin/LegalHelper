@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/SupabaseAuthContext'
+import type { User } from '@/lib/supabase'
 
 interface PricingTier {
   name: string;
@@ -17,13 +18,19 @@ interface PricingTier {
 
 export default function Pricing() {
   const [mounted, setMounted] = useState(false)
-  const authContext = useAuth()
+  const [user, setUser] = useState<User | null>(null)
   
-  // Safely access user only after component mounts (client-side)
-  const user = mounted ? authContext?.user : null
-  
+  // Safely get auth context only on client side
   useEffect(() => {
     setMounted(true)
+    // Only access auth context after mounting
+    try {
+      const authContext = useAuth()
+      setUser(authContext?.user || null)
+    } catch (error) {
+      // Auth context not available (during SSR)
+      setUser(null)
+    }
   }, [])
   
   const pricingTiers: PricingTier[] = [
@@ -283,4 +290,11 @@ export default function Pricing() {
       </footer>
     </>
   )
+}
+
+// This prevents static generation and makes the page server-side rendered
+export async function getServerSideProps() {
+  return {
+    props: {}
+  }
 } 
