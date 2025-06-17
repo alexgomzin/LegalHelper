@@ -41,7 +41,7 @@ export function PaddleProvider({ children }: { children: ReactNode }) {
     script.onload = () => {
       // Initialize Paddle
       try {
-        if (window.Paddle) {
+      if (window.Paddle) {
           const vendorId = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
           const vendorIdInt = parseInt(vendorId || '12345', 10);
           
@@ -52,12 +52,12 @@ export function PaddleProvider({ children }: { children: ReactNode }) {
             return;
           }
           
-          window.Paddle.Setup({
+        window.Paddle.Setup({
             vendor: vendorIdInt, // Ensure it's an integer
-            debug: process.env.NODE_ENV !== 'production',
-          });
-          setIsLoaded(true);
-        }
+          debug: process.env.NODE_ENV !== 'production',
+        });
+        setIsLoaded(true);
+      }
       } catch (err) {
         console.error('Error initializing Paddle:', err);
         setError('Failed to initialize payment system');

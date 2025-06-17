@@ -377,7 +377,7 @@ export default function AnalyzePage() {
     // Store the filename for reference
     if (file) {
       try {
-        localStorage.setItem('lastUploadedFileName', file.name)
+      localStorage.setItem('lastUploadedFileName', file.name)
       } catch (e) {
         console.warn('Could not save file name to localStorage:', e)
         // Optionally, notify the user or handle gracefully
@@ -496,33 +496,33 @@ export default function AnalyzePage() {
   const handlePayPerDocument = async () => {
     // Use the Paddle provider instead of direct initialization
     const openCheckout = () => {
-      if (!user) return;
-      
+    if (!user) return;
+    
       // @ts-ignore - Paddle is loaded via PaddleProvider
       if (window.Paddle) {
-        window.Paddle.Checkout.open({
+    window.Paddle.Checkout.open({
           product: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || 'PAY_PER_DOCUMENT',
-          email: user.email,
-          successCallback: (data: any) => {
-            // Handle successful purchase
-            console.log('Purchase successful', data);
-            // Call API to record the purchase
-            fetch('/api/payment/pay-per-document', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                checkout_id: data.checkout.id,
-                user_id: user.id,
-              }),
-            }).then(() => {
-              // Refresh credit status
-              setHasCredits(true);
-              setShowPaymentModal(false);
-            });
-          }
+      email: user.email,
+      successCallback: (data: any) => {
+        // Handle successful purchase
+        console.log('Purchase successful', data);
+        // Call API to record the purchase
+        fetch('/api/payment/pay-per-document', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            checkout_id: data.checkout.id,
+            user_id: user.id,
+          }),
+        }).then(() => {
+          // Refresh credit status
+          setHasCredits(true);
+          setShowPaymentModal(false);
         });
+      }
+    });
       } else {
         console.error('Paddle is not loaded yet');
         setErrorMessage('Payment system is loading, please try again in a moment.');

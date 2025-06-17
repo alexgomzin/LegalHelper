@@ -53,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         amount_paid: 1.50, // $1.50 for pay-per-document
         purchase_date: new Date().toISOString(),
         status: 'completed'
-      });
+    });
 
     return res.status(200).json({ success: true });
   } catch (error) {
