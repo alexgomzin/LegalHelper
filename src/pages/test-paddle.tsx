@@ -7,31 +7,70 @@ function TestPaddleContent() {
   const { isLoaded, openCheckout } = usePaddle();
   const { user } = useAuth();
 
-  const testCheckout = (productId: string) => {
-    if (!isLoaded) {
-      alert('Paddle is not loaded yet. Please wait a moment.');
-      return;
-    }
-
+  const testCheckout = async (productId: string) => {
     if (!user) {
       alert('Please login first');
       return;
     }
 
-    console.log('Opening Paddle checkout for:', productId);
-    console.log('Using product ID:', productId);
-    
-    openCheckout({
-      product: productId,
-      email: user.email,
-      successCallback: (data) => {
-        console.log('Purchase successful!', data);
-        alert('Purchase successful! Check console for details.');
-      },
-      closeCallback: () => {
-        console.log('Checkout closed');
+    console.log('Testing checkout for price ID:', productId);
+
+    try {
+      // First, let's try the server-side approach to get checkout URLs
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: productId,
+          userEmail: user.email,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Possible checkout URLs:', data.checkoutUrls);
+        
+        // Try the first URL
+        const checkoutUrl = data.checkoutUrls[0];
+        console.log('Opening checkout URL:', checkoutUrl);
+        
+        // Open in new window
+        const popup = window.open(checkoutUrl, 'paddle-checkout', 'width=600,height=800,scrollbars=yes,resizable=yes');
+        
+        if (!popup) {
+          alert('Popup blocked. Please allow popups for this site and try again.');
+        }
+      } else {
+        console.error('Failed to create checkout:', data);
+        alert('Failed to create checkout. Please try again.');
       }
-    });
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      
+      // Fallback to the old method
+      console.log('Falling back to Paddle JS SDK...');
+      
+      if (!isLoaded) {
+        alert('Paddle is not loaded yet. Please wait a moment.');
+        return;
+      }
+      
+      openCheckout({
+        product: productId,
+        email: user.email,
+        successCallback: (data) => {
+          console.log('Purchase successful!', data);
+          alert('Purchase successful! Check console for details.');
+        },
+        closeCallback: () => {
+          console.log('Checkout closed');
+        }
+      });
+    }
   };
 
   return (

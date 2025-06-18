@@ -87,17 +87,35 @@ export function PaddleProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // For Paddle Billing, create a checkout URL and redirect
-    const baseUrl = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' 
-      ? 'https://checkout.paddle.com' 
-      : 'https://sandbox-checkout.paddle.com';
-    
-    const checkoutUrl = `${baseUrl}/checkout?_ptxn=${options.product}`;
-    
-    console.log('Opening Paddle Billing checkout:', checkoutUrl);
-    
-    // Open in new window or redirect
-    window.open(checkoutUrl, 'paddle-checkout', 'width=600,height=800,scrollbars=yes,resizable=yes');
+    if (isLoaded && window.Paddle) {
+      console.log('Opening Paddle checkout for price:', options.product);
+      
+      // Try the direct price ID approach for Paddle Billing
+      try {
+        window.Paddle.Checkout.open({
+          override: options.product, // Use price ID directly
+          email: options.email,
+          successCallback: function(data: any) {
+            console.log('Checkout success:', data);
+            if (options.successCallback) {
+              options.successCallback(data);
+            }
+          },
+          closeCallback: function() {
+            console.log('Checkout closed');
+            if (options.closeCallback) {
+              options.closeCallback();
+            }
+          }
+        });
+      } catch (err) {
+        console.error('Error opening Paddle checkout:', err);
+        alert('Error opening checkout. Please try again or contact support.');
+      }
+    } else {
+      console.error('Paddle is not loaded yet');
+      alert('Payment system is still loading. Please wait a moment and try again.');
+    }
   };
 
   return (
