@@ -87,11 +87,17 @@ export function PaddleProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    if (isLoaded && window.Paddle) {
-      window.Paddle.Checkout.open(options);
-    } else {
-      console.error('Paddle is not loaded yet');
-    }
+    // For Paddle Billing, create a checkout URL and redirect
+    const baseUrl = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' 
+      ? 'https://checkout.paddle.com' 
+      : 'https://sandbox-checkout.paddle.com';
+    
+    const checkoutUrl = `${baseUrl}/checkout?_ptxn=${options.product}`;
+    
+    console.log('Opening Paddle Billing checkout:', checkoutUrl);
+    
+    // Open in new window or redirect
+    window.open(checkoutUrl, 'paddle-checkout', 'width=600,height=800,scrollbars=yes,resizable=yes');
   };
 
   return (

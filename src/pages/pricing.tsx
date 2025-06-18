@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/SupabaseAuthContext'
 
 interface PricingTier {
   name: string;
@@ -16,33 +17,11 @@ interface PricingTier {
 
 export default function Pricing() {
   const [mounted, setMounted] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const { user, isLoading } = useAuth()
   
-  // Safely get auth context only on client side - NO SSR
+  // Set mounted state for client-side rendering
   useEffect(() => {
     setMounted(true)
-    
-    // Only on client side, dynamically import and use auth
-    const loadAuth = async () => {
-      try {
-        // Dynamic import to prevent SSR issues
-        const { useAuth } = await import('@/contexts/SupabaseAuthContext')
-        
-        // This will only work on client side
-        if (typeof window !== 'undefined') {
-          // We can't use hooks in async functions, so we'll check localStorage directly
-          // or use a different approach
-          
-          // For now, let's just assume no user during build
-          setUser(null)
-        }
-      } catch (error) {
-        console.log('Auth not available during SSR')
-        setUser(null)
-      }
-    }
-    
-    loadAuth()
   }, [])
   
   const pricingTiers: PricingTier[] = [
@@ -112,6 +91,12 @@ export default function Pricing() {
     // Only run on client-side
     if (!mounted) return
     
+    // Don't proceed if still loading authentication
+    if (isLoading) {
+      console.log('Authentication still loading...')
+      return
+    }
+    
     if (!user) {
       // Redirect to login if not authenticated
       if (typeof window !== 'undefined') {
@@ -121,8 +106,11 @@ export default function Pricing() {
     }
 
     if (tierId === 'free') {
-      // Already on free plan
-      return;
+      // Redirect to dashboard for free plan
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard'
+      }
+      return
     }
 
     // Redirect to checkout page with plan and product parameters
@@ -203,52 +191,80 @@ export default function Pricing() {
                   </ul>
                 </div>
                 
-                {/* Show buttons - simplified without auth checking during SSR */}
+                {/* Purchase buttons with proper auth handling */}
                 {tier.id === 'payg' ? (
                   <button
                     onClick={() => handlePurchase('payg')}
-                    className="mt-8 block w-full rounded-md border border-transparent bg-green-600 py-3 px-6 text-center font-medium text-white hover:bg-green-700"
+                    disabled={isLoading}
+                    className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      isLoading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
                   >
-                    Pay $1.50 per Analysis
+                    {isLoading ? 'Loading...' : 'Pay $1.50 per Analysis'}
                   </button>
                 ) : tier.id === 'packages' ? (
                   <div className="mt-8 space-y-2">
                     <button
-                      onClick={() => handlePurchase('pack5', 'PRODUCT_ID_5_PACK')}
-                      className="block w-full rounded-md border border-transparent bg-blue-600 py-3 px-6 text-center font-medium text-white hover:bg-blue-700"
+                      onClick={() => handlePurchase('pack5')}
+                      disabled={isLoading}
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                        isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
                     >
-                      Buy 5 Analyses - $5.50
+                      {isLoading ? 'Loading...' : 'Buy 5 Analyses - $5.50'}
                     </button>
                     <button
-                      onClick={() => handlePurchase('pack15', 'PRODUCT_ID_15_PACK')}
-                      className="block w-full rounded-md border border-transparent bg-blue-600 py-3 px-6 text-center font-medium text-white hover:bg-blue-700"
+                      onClick={() => handlePurchase('pack15')}
+                      disabled={isLoading}
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                        isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
                     >
-                      Buy 15 Analyses - $12.00
+                      {isLoading ? 'Loading...' : 'Buy 15 Analyses - $12.00'}
                     </button>
                     <button
-                      onClick={() => handlePurchase('pack30', 'PRODUCT_ID_30_PACK')}
-                      className="block w-full rounded-md border border-transparent bg-blue-600 py-3 px-6 text-center font-medium text-white hover:bg-blue-700"
+                      onClick={() => handlePurchase('pack30')}
+                      disabled={isLoading}
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                        isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
                     >
-                      Buy 30 Analyses - $22.50
+                      {isLoading ? 'Loading...' : 'Buy 30 Analyses - $22.50'}
                     </button>
                   </div>
                 ) : tier.id === 'subscription' ? (
                   <button
                     onClick={() => handlePurchase('subscription')}
-                    className="mt-8 block w-full rounded-md border border-transparent bg-purple-600 py-3 px-6 text-center font-medium text-white hover:bg-purple-700"
+                    disabled={isLoading}
+                    className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      isLoading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-purple-600 hover:bg-purple-700'
+                    }`}
                   >
-                    Subscribe - $30.00/month
+                    {isLoading ? 'Loading...' : 'Subscribe - $30.00/month'}
                   </button>
                 ) : (
                   <button
                     onClick={() => handlePurchase(tier.id)}
-                    className={`mt-8 block w-full rounded-md border border-transparent ${
-                      tier.id === 'free' 
-                        ? 'bg-gray-600 hover:bg-gray-700' 
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    } py-3 px-6 text-center font-medium text-white`}
+                    disabled={isLoading}
+                    className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      isLoading 
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : tier.id === 'free' 
+                          ? 'bg-gray-600 hover:bg-gray-700' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
                   >
-                    {tier.cta}
+                    {isLoading ? 'Loading...' : tier.cta}
                   </button>
                 )}
               </div>
