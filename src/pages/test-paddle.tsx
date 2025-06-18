@@ -52,7 +52,7 @@ function TestPaddleContent() {
           <h3 className="font-bold">Single Analysis</h3>
           <p className="text-gray-600 text-sm">$1.50</p>
           <button
-            onClick={() => testCheckout('pro_01jxr3t88stn3m7kjspe28kt9w')}
+            onClick={() => testCheckout(process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || 'PAY_PER_DOCUMENT')}
             disabled={!isLoaded || !user}
             className="mt-2 w-full bg-green-600 text-white py-2 rounded disabled:bg-gray-400"
           >
@@ -64,7 +64,7 @@ function TestPaddleContent() {
           <h3 className="font-bold">Starter Pack</h3>
           <p className="text-gray-600 text-sm">$5.50 (5 analyses)</p>
           <button
-            onClick={() => testCheckout('pro_01jxr3zc1d20kdagx69ht75c5y')}
+            onClick={() => testCheckout(process.env.NEXT_PUBLIC_PADDLE_5_PACK || 'PRODUCT_ID_5_PACK')}
             disabled={!isLoaded || !user}
             className="mt-2 w-full bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
           >
@@ -76,7 +76,7 @@ function TestPaddleContent() {
           <h3 className="font-bold">Professional Pack</h3>
           <p className="text-gray-600 text-sm">$12.00 (15 analyses)</p>
           <button
-            onClick={() => testCheckout('pro_01jxr4273t1g8fsdje12v8ztwt')}
+            onClick={() => testCheckout(process.env.NEXT_PUBLIC_PADDLE_15_PACK || 'PRODUCT_ID_15_PACK')}
             disabled={!isLoaded || !user}
             className="mt-2 w-full bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
           >

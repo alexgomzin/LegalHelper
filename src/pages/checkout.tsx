@@ -107,19 +107,19 @@ export default function Checkout() {
     if (!productId) {
       switch (selectedPlan) {
         case 'payg':
-          productId = 'pro_01jxr3t88stn3m7kjspe28kt9w';
+          productId = process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || 'PAY_PER_DOCUMENT';
           break;
         case 'pack5':
-          productId = 'pro_01jxr3zc1d20kdagx69ht75c5y';
+          productId = process.env.NEXT_PUBLIC_PADDLE_5_PACK || 'PRODUCT_ID_5_PACK';
           break;
         case 'pack15':
-          productId = 'pro_01jxr4273t1g8fsdje12v8ztwt';
+          productId = process.env.NEXT_PUBLIC_PADDLE_15_PACK || 'PRODUCT_ID_15_PACK';
           break;
         case 'pack30':
-          productId = 'pro_01jxr44atsbpkaam04an1cm6rc';
+          productId = process.env.NEXT_PUBLIC_PADDLE_30_PACK || 'PRODUCT_ID_30_PACK';
           break;
         case 'subscription':
-          productId = 'pro_01jxr46gefp8dv3cp12h6xs607';
+          productId = process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || 'PRODUCT_ID_50_PACK_SUBSCRIPTION';
           break;
         default:
           alert('Invalid plan selected');
