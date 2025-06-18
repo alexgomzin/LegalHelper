@@ -15,38 +15,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     //   return res.status(401).json({ error: 'Invalid signature' });
     // }
 
-    const { alert_name, subscription_id, status, user_id, customer_id } = req.body;
+    const { event_type, data } = req.body;
 
-    // Handle different webhook events
-    switch (alert_name) {
-      case 'subscription_created':
+    // Handle different webhook events (Paddle Billing format)
+    switch (event_type) {
+      case 'transaction.completed':
+        // One-time purchase completed (credits, pay-per-document)
+        await handleTransactionCompleted(data);
+        break;
+
+      case 'subscription.created':
         // New subscription created
-        await handleSubscriptionCreated(subscription_id, user_id, customer_id);
+        await handleSubscriptionCreated(data.id, data.custom_data?.user_id, data.customer_id);
         break;
 
-      case 'subscription_updated':
+      case 'subscription.updated':
         // Subscription details updated
-        await handleSubscriptionUpdated(subscription_id, status);
+        await handleSubscriptionUpdated(data.id, data.status);
         break;
 
-      case 'subscription_cancelled':
+      case 'subscription.canceled':
         // Subscription cancelled
-        await handleSubscriptionCancelled(subscription_id);
+        await handleSubscriptionCancelled(data.id);
         break;
 
-      case 'subscription_payment_succeeded':
-        // Payment for the subscription succeeded
-        await handleSubscriptionPaymentSucceeded(subscription_id);
-        break;
-
-      case 'subscription_payment_failed':
-        // Payment for the subscription failed
-        await handleSubscriptionPaymentFailed(subscription_id);
+      case 'subscription.past_due':
+        // Subscription payment failed and is now past due
+        await handleSubscriptionPaymentFailed(data.id);
         break;
 
       default:
         // Log unknown event but still return 200 to acknowledge
-        console.log('Unknown webhook event:', alert_name);
+        console.log('Unknown webhook event:', event_type);
     }
 
     // Always return a 200 response to acknowledge receipt of the webhook
@@ -56,6 +56,86 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Still return 200 to acknowledge receipt, otherwise Paddle will retry
     return res.status(200).json({ success: false, error: 'Error processing webhook' });
   }
+}
+
+// Helper function to handle completed transactions (one-time purchases)
+async function handleTransactionCompleted(transactionData: any) {
+  const { id: transactionId, customer_id, items, custom_data } = transactionData;
+  const userId = custom_data?.user_id;
+
+  if (!userId) {
+    console.log('No user_id found in transaction custom_data:', transactionId);
+    return;
+  }
+
+  // Get user details
+  const { data: user, error: userError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (userError || !user) {
+    console.log('User not found for transaction:', transactionId);
+    return;
+  }
+
+  // Calculate credits based on items purchased
+  let creditsToAdd = 0;
+  let totalAmount = 0;
+
+  for (const item of items) {
+    const productId = item.price?.id;
+    
+    if (productId === process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT) {
+      creditsToAdd += 1;
+      totalAmount += 1.50;
+    } else if (productId === process.env.NEXT_PUBLIC_PADDLE_5_PACK) {
+      creditsToAdd += 5;
+      totalAmount += 5.50;
+    } else if (productId === process.env.NEXT_PUBLIC_PADDLE_15_PACK) {
+      creditsToAdd += 15;
+      totalAmount += 12.00;
+    } else if (productId === process.env.NEXT_PUBLIC_PADDLE_30_PACK) {
+      creditsToAdd += 30;
+      totalAmount += 22.50;
+    }
+  }
+
+  if (creditsToAdd > 0) {
+    // Update user credits
+    await supabase
+      .from('profiles')
+      .update({
+        credits_remaining: (user.credits_remaining || 0) + creditsToAdd,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    // Log the transaction
+    await supabase.from('transactions').insert({
+      user_id: userId,
+      product_id: items[0]?.price?.id || 'unknown',
+      amount: totalAmount,
+      checkout_id: transactionId,
+      transaction_type: 'purchase',
+      created_at: new Date().toISOString(),
+    });
+
+    // Store the purchase record
+    await supabase.from('user_purchases').insert({
+      user_id: userId,
+      checkout_id: transactionId,
+      product_id: items[0]?.price?.id || 'unknown',
+      credits_purchased: creditsToAdd,
+      amount_paid: totalAmount,
+      purchase_date: new Date().toISOString(),
+      status: 'completed'
+    });
+  }
+
+  // Log the event
+  await logWebhookEvent('transaction.completed', { transactionId, userId, creditsToAdd });
 }
 
 // Helper function to handle subscription creation

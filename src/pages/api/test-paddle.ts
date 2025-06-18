@@ -13,10 +13,34 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
   };
 
+  // Validate required environment variables
+  const requiredVars = [
+    'NEXT_PUBLIC_PADDLE_VENDOR_ID',
+    'NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT',
+    'NEXT_PUBLIC_PADDLE_5_PACK',
+    'NEXT_PUBLIC_PADDLE_15_PACK',
+    'NEXT_PUBLIC_PADDLE_30_PACK',
+    'NEXT_PUBLIC_PADDLE_SUBSCRIPTION'
+  ];
+
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  const hasAllVars = missingVars.length === 0;
+
   return res.status(200).json({
-    success: true,
-    message: 'Paddle configuration loaded',
+    success: hasAllVars,
+    message: hasAllVars ? 'Paddle configuration loaded successfully' : 'Missing required environment variables',
     config: paddleConfig,
+    validation: {
+      hasAllRequiredVars: hasAllVars,
+      missingVars: missingVars,
+      totalVars: requiredVars.length,
+      presentVars: requiredVars.length - missingVars.length
+    },
+    recommendations: hasAllVars ? [] : [
+      'Check your Render environment variables',
+      'Ensure all NEXT_PUBLIC_PADDLE_* variables are set',
+      'Verify product IDs match your Paddle dashboard'
+    ],
     timestamp: new Date().toISOString()
   });
 } 
