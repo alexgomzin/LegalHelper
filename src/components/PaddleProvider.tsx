@@ -34,87 +34,49 @@ export function PaddleProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string>();
 
   useEffect(() => {
-    // Load Paddle SDK
-    const script = document.createElement('script');
-    script.src = 'https://cdn.paddle.com/paddle/paddle.js';
-    script.async = true;
-    script.onload = () => {
-      // Initialize Paddle
-      try {
-      if (window.Paddle) {
-          const vendorId = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
-          const vendorIdInt = parseInt(vendorId || '12345', 10);
-          
-          // Validate vendor ID
-          if (isNaN(vendorIdInt) || vendorIdInt <= 0) {
-            console.error('Invalid Paddle vendor ID:', vendorId);
-            setError('Invalid payment configuration');
-            return;
-          }
-          
-        window.Paddle.Setup({
-            vendor: vendorIdInt, // Ensure it's an integer
-          debug: process.env.NODE_ENV !== 'production',
-        });
-        setIsLoaded(true);
-      }
-      } catch (err) {
-        console.error('Error initializing Paddle:', err);
-        setError('Failed to initialize payment system');
-      }
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load Paddle script');
-      setError('Failed to load payment system');
-    };
-    
-    document.body.appendChild(script);
-
-    // Cleanup
-    return () => {
-      // Only remove the script if it's still in the document
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
+    // For Paddle Billing, we don't need to load any SDK
+    // We'll use direct API calls and redirect to checkout URLs
+    setIsLoaded(true);
   }, []);
 
-  // Function to open Paddle checkout
-  const openCheckout = (options: PaddleCheckoutOptions) => {
+  // Function to open Paddle checkout using Paddle Billing
+  const openCheckout = async (options: PaddleCheckoutOptions) => {
     if (error) {
       console.error('Cannot open checkout due to initialization error:', error);
       return;
     }
     
-    if (isLoaded && window.Paddle) {
-      console.log('Opening Paddle checkout for price:', options.product);
+    try {
+      console.log('Creating Paddle Billing checkout for price:', options.product);
       
-      // Try the direct price ID approach for Paddle Billing
-      try {
-        window.Paddle.Checkout.open({
-          override: options.product, // Use price ID directly
-          email: options.email,
-          successCallback: function(data: any) {
-            console.log('Checkout success:', data);
-            if (options.successCallback) {
-              options.successCallback(data);
-            }
-          },
-          closeCallback: function() {
-            console.log('Checkout closed');
-            if (options.closeCallback) {
-              options.closeCallback();
-            }
-          }
-        });
-      } catch (err) {
-        console.error('Error opening Paddle checkout:', err);
-        alert('Error opening checkout. Please try again or contact support.');
+      // Create checkout via our API
+      const response = await fetch('/api/payment/create-paddle-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId: options.product,
+          customerEmail: options.email,
+          successUrl: `${window.location.origin}/dashboard?purchase=success`,
+          cancelUrl: window.location.href
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.checkoutUrl) {
+        console.log('Opening Paddle Billing checkout:', data.checkoutUrl);
+        
+        // Redirect to Paddle Billing checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        console.error('Failed to create checkout:', data);
+        alert(`Failed to create checkout: ${data.error || 'Unknown error'}`);
       }
-    } else {
-      console.error('Paddle is not loaded yet');
-      alert('Payment system is still loading. Please wait a moment and try again.');
+    } catch (err) {
+      console.error('Error creating checkout:', err);
+      alert('Error creating checkout. Please try again or contact support.');
     }
   };
 
