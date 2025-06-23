@@ -30,9 +30,24 @@ export default function Checkout() {
     if (router.isReady) {
       const { plan, product, priceId: queryPriceId, email: queryEmail, success, cancel } = router.query;
       
-      if (plan) setSelectedPlan(plan as string);
+      if (plan) {
+        setSelectedPlan(plan as string);
+        // Map plan to price ID
+        const planToPriceId: { [key: string]: string } = {
+          'payg': 'pri_01jxr3y58530jpe07e9cttnamc',
+          'pack5': 'pri_01jxr3zc1d20kdagx69ht75c5y',
+          'pack15': 'pri_01jxr4273t1g8fsdje12v8ztwt',
+          'pack30': 'pri_01jxr44atsbpkaam04an1cm6rc',
+          'subscription': 'pri_01jxr46gefp8dv3cp12h6xs607'
+        };
+        
+        if (planToPriceId[plan as string]) {
+          setPriceId(planToPriceId[plan as string]);
+        }
+      }
+      
       if (product) setSelectedProduct(product as string);
-      if (queryPriceId) setPriceId(queryPriceId as string);
+      if (queryPriceId) setPriceId(queryPriceId as string); // Direct price ID overrides plan mapping
       if (queryEmail) setEmail(queryEmail as string);
       if (success) setSuccessUrl(success as string);
       if (cancel) setCancelUrl(cancel as string);
@@ -161,8 +176,9 @@ export default function Checkout() {
   };
 
   const getPriceDetails = () => {
-    // Map price IDs to plan details
+    // Map both price IDs and plan IDs to plan details
     const priceMap: { [key: string]: any } = {
+      // Price ID mappings
       'pri_01jxr3y58530jpe07e9cttnamc': {
         title: 'Pay-as-you-go',
         price: '$1.50',
@@ -192,10 +208,42 @@ export default function Checkout() {
         price: '$30.00',
         description: '50 analyses per month ($0.60 each)',
         features: ['Best value for high usage', 'Cancel anytime', 'Recurring monthly billing', 'Priority support']
+      },
+      // Plan ID mappings (fallback)
+      'payg': {
+        title: 'Pay-as-you-go',
+        price: '$1.50',
+        description: 'Per document analysis',
+        features: ['No subscription required', 'Pay only when you need analysis', 'All analysis features included']
+      },
+      'pack5': {
+        title: 'Starter Pack',
+        price: '$5.50',
+        description: '5 analyses ($1.10 each)',
+        features: ['Credits never expire', 'All analysis features included', 'Perfect for occasional use']
+      },
+      'pack15': {
+        title: 'Professional Pack',
+        price: '$12.00',
+        description: '15 analyses ($0.80 each)',
+        features: ['Credits never expire', 'All analysis features included', 'Save 47% vs pay-as-you-go', 'Most popular choice']
+      },
+      'pack30': {
+        title: 'Business Pack',
+        price: '$22.50',
+        description: '30 analyses ($0.75 each)',
+        features: ['Credits never expire', 'All analysis features included', 'Save 50% vs pay-as-you-go', 'Best value for teams']
+      },
+      'subscription': {
+        title: 'Monthly Subscription',
+        price: '$30.00',
+        description: '50 analyses per month ($0.60 each)',
+        features: ['Best value for high usage', 'Cancel anytime', 'Recurring monthly billing', 'Priority support']
       }
     };
 
-    return priceMap[priceId] || {
+    // Try price ID first, then plan ID, then default
+    return priceMap[priceId] || priceMap[selectedPlan] || {
       title: 'Select a Plan',
       price: '',
       description: 'Please select a valid plan',
