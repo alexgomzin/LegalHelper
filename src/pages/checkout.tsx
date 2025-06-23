@@ -69,26 +69,55 @@ export default function Checkout() {
     script.onload = () => {
       if (window.Paddle) {
         const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
+        const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
         
-        window.Paddle.Initialize({
-          token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN || 'test_client_token',
-          environment: environment,
-          eventCallback: function(data: any) {
-            console.log('Paddle event:', data);
-            
-            if (data.name === 'checkout.completed') {
-              setIsProcessing(true);
-              handleSuccessfulPurchase(data);
-            }
-            
-            if (data.name === 'checkout.error') {
-              setCheckoutError(data.error?.message || 'Checkout failed');
-            }
+        console.log('Initializing Paddle with:', { environment, hasClientToken: !!clientToken });
+        
+        if (!clientToken) {
+          console.error('NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is not configured');
+          setCheckoutError('Payment system configuration error. Please contact support.');
+          return;
+        }
+        
+        try {
+          // Set environment first for sandbox
+          if (environment === 'sandbox') {
+            window.Paddle.Environment.set('sandbox');
           }
-        });
-        setPaddleLoaded(true);
+          
+          // Initialize Paddle with the correct parameters for Paddle Billing
+          window.Paddle.Initialize({
+            token: clientToken,
+            eventCallback: function(data: any) {
+              console.log('Paddle event:', data);
+              
+              if (data.name === 'checkout.completed') {
+                setIsProcessing(true);
+                handleSuccessfulPurchase(data);
+              }
+              
+              if (data.name === 'checkout.error') {
+                setCheckoutError(data.error?.message || 'Checkout failed');
+              }
+            }
+          });
+          console.log('Paddle initialized successfully');
+          setPaddleLoaded(true);
+        } catch (error) {
+          console.error('Failed to initialize Paddle:', error);
+          setCheckoutError('Failed to initialize payment system. Please refresh the page.');
+        }
+      } else {
+        console.error('Paddle SDK not loaded');
+        setCheckoutError('Payment system failed to load. Please refresh the page.');
       }
     };
+    
+    script.onerror = () => {
+      console.error('Failed to load Paddle script');
+      setCheckoutError('Failed to load payment system. Please check your connection and refresh.');
+    };
+    
     document.body.appendChild(script);
 
     return () => {
@@ -131,12 +160,7 @@ export default function Checkout() {
     }
   };
 
-  const initiatePaddleCheckout = () => {
-    if (!paddleLoaded) {
-      setCheckoutError('Payment system is not ready. Please try again.');
-      return;
-    }
-
+  const initiatePaddleCheckout = async () => {
     if (!priceId) {
       setCheckoutError('No price selected. Please return to pricing page.');
       return;
@@ -151,28 +175,65 @@ export default function Checkout() {
     setCheckoutError('');
     setIsProcessing(true);
 
-    if (window.Paddle) {
-      window.Paddle.Checkout.open({
-        items: [
-          {
-            priceId: priceId,
-            quantity: 1
+    // Try Paddle.js first if loaded
+    if (paddleLoaded && window.Paddle) {
+      try {
+        window.Paddle.Checkout.open({
+          items: [
+            {
+              priceId: priceId,
+              quantity: 1
+            }
+          ],
+          customer: {
+            email: customerEmail
+          },
+          settings: {
+            displayMode: 'overlay',
+            locale: 'en',
+            theme: 'light',
+            successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
+            cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
           }
-        ],
-        customer: {
-          email: customerEmail
+        });
+        setIsProcessing(false);
+        return;
+      } catch (error) {
+        console.error('Paddle.js checkout failed:', error);
+        setCheckoutError('Paddle checkout failed, trying alternative method...');
+      }
+    }
+
+    // Fallback: Use API to create checkout URL
+    try {
+      console.log('Using API fallback for checkout');
+      const response = await fetch('/api/payment/create-paddle-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        settings: {
-          displayMode: 'overlay',
-          locale: 'en',
-          theme: 'light',
+        body: JSON.stringify({
+          priceId: priceId,
+          customerEmail: customerEmail,
           successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
           cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
-        }
+        }),
       });
+
+      const data = await response.json();
+
+      if (data.success && data.checkoutUrl) {
+        console.log('Redirecting to checkout URL:', data.checkoutUrl);
+        window.location.href = data.checkoutUrl;
+      } else {
+        setCheckoutError(data.error || 'Failed to create checkout. Please try again.');
+      }
+    } catch (error) {
+      console.error('API checkout failed:', error);
+      setCheckoutError('Failed to create checkout. Please try again or contact support.');
+    } finally {
+      setIsProcessing(false);
     }
-    
-    setIsProcessing(false);
   };
 
   const getPriceDetails = () => {
@@ -300,6 +361,21 @@ export default function Checkout() {
               <p className="text-gray-600 text-sm mt-1">
                 <strong>Price ID:</strong> <code className="bg-gray-100 px-1 rounded">{priceId}</code>
               </p>
+              
+              {/* Paddle Status */}
+              <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
+                <p className="font-medium text-gray-700 mb-2">Payment System Status:</p>
+                <div className="space-y-1 text-gray-600">
+                  <p>Environment: <span className="font-mono">{process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'not set'}</span></p>
+                  <p>Client Token: <span className={process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? 'text-green-600' : 'text-red-600'}>
+                    {process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? '✓ Configured' : '✗ Missing'}
+                  </span></p>
+                  <p>Paddle.js: <span className={paddleLoaded ? 'text-green-600' : 'text-yellow-600'}>
+                    {paddleLoaded ? '✓ Loaded' : '⏳ Loading...'}
+                  </span></p>
+                  <p>Fallback API: <span className="text-green-600">✓ Available</span></p>
+                </div>
+              </div>
             </div>
 
             {/* Error Display */}
@@ -311,19 +387,20 @@ export default function Checkout() {
 
             {/* Checkout Button */}
             <div className="text-center">
-              <button
-                onClick={initiatePaddleCheckout}
-                disabled={isProcessing || !paddleLoaded || !priceId || !customerEmail}
-                className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-              >
-                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
-              </button>
-              
-              <p className="text-sm text-gray-500 mt-2">
-                {!paddleLoaded && 'Loading payment system...'}
-                {paddleLoaded && !priceId && 'Missing price information'}
-                {paddleLoaded && !customerEmail && 'Missing customer email'}
-              </p>
+                          <button
+              onClick={initiatePaddleCheckout}
+              disabled={isProcessing || !priceId || !customerEmail}
+              className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            >
+              {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+            </button>
+            
+            <p className="text-sm text-gray-500 mt-2">
+              {!paddleLoaded && !checkoutError && 'Loading payment system...'}
+              {!priceId && 'Missing price information'}
+              {!customerEmail && 'Missing customer email'}
+              {paddleLoaded && priceId && customerEmail && 'Ready to proceed'}
+            </p>
             </div>
 
             {/* Back to Pricing Link */}
