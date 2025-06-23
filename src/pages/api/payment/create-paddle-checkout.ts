@@ -33,8 +33,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const apiKey = process.env.PADDLE_API_KEY;
     
     if (apiKey) {
+      console.log('Attempting Paddle API transaction creation...');
       // Try creating transaction via API
       try {
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers.host;
+        const baseUrl = `${protocol}://${host}`;
+        
         const response = await fetch(paddleApiUrl, {
           method: 'POST',
           headers: {
@@ -55,14 +60,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               user_email: customerEmail
             },
             checkout: {
-              url: successUrl || `${req.headers.origin}/dashboard?purchase=success`
+              url: successUrl || `${baseUrl}/dashboard?purchase=success`
             }
           })
         });
 
         const data = await response.json();
+        console.log('Paddle API response:', { status: response.status, data });
         
         if (response.ok && data.data && data.data.checkout) {
+          console.log('Successfully created checkout via Paddle API');
           return res.status(200).json({
             success: true,
             checkoutUrl: data.data.checkout.url,
@@ -70,16 +77,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             method: 'api'
           });
         } else {
-          console.warn('API transaction creation failed:', data);
+          console.warn('API transaction creation failed:', { status: response.status, data });
         }
       } catch (apiError) {
         console.warn('API approach failed:', apiError);
       }
+    } else {
+      console.log('No PADDLE_API_KEY configured, using fallback method');
     }
 
     // Fallback: Generate Paddle.js compatible checkout URL
     // This creates a URL that can be used with Paddle.js overlay checkout
-    const baseUrl = window.location ? window.location.origin : req.headers.origin;
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host;
+    const baseUrl = `${protocol}://${host}`;
     
     // Create a checkout URL that will use Paddle.js
     const checkoutUrl = `${baseUrl}/checkout?priceId=${priceId}&email=${encodeURIComponent(customerEmail)}&success=${encodeURIComponent(successUrl || `${baseUrl}/dashboard?purchase=success`)}&cancel=${encodeURIComponent(cancelUrl || `${baseUrl}/pricing`)}`;
