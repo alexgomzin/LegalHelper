@@ -14,60 +14,86 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Creating Paddle Billing checkout for:', { priceId, customerEmail });
 
-    // Paddle Billing API endpoint
-    const paddleApiUrl = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
+    const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
+    const vendorId = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
+
+    if (!vendorId) {
+      return res.status(500).json({ error: 'Paddle vendor ID not configured' });
+    }
+
+    // Since we don't have Paddle API key configured yet, we'll create a checkout URL
+    // that can be used with Paddle.js or try direct API approach
+    
+    // For testing purposes, let's try creating a transaction first
+    const paddleApiUrl = environment === 'production'
       ? 'https://api.paddle.com/transactions'
       : 'https://sandbox-api.paddle.com/transactions';
 
-    // Prepare checkout data for Paddle Billing API
-    const checkoutData = {
-      items: [
-        {
-          price_id: priceId,
-          quantity: 1
-        }
-      ],
-      customer: {
-        email: customerEmail
-      },
-      custom_data: {
-        user_email: customerEmail
-      },
-      checkout: {
-        url: successUrl || `${req.headers.origin}/dashboard?purchase=success`
-      }
-    };
-
-    // For now, since we don't have Paddle API key set up, let's try direct checkout URLs
-    const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
+    // Check if we have API key configured
+    const apiKey = process.env.PADDLE_API_KEY;
     
-    // Try different Paddle Billing checkout URL formats
-    const checkoutUrls = [
-      `https://checkout.paddle.com/checkout?_ptxn=${priceId}&customer_email=${encodeURIComponent(customerEmail)}`,
-      `https://checkout.paddle.com/${priceId}?customer_email=${encodeURIComponent(customerEmail)}`,
-      `https://buy.paddle.com/product/${priceId}?customer_email=${encodeURIComponent(customerEmail)}`,
-      `https://www.paddle.com/checkout/${priceId}?customer_email=${encodeURIComponent(customerEmail)}`
-    ];
+    if (apiKey) {
+      // Try creating transaction via API
+      try {
+        const response = await fetch(paddleApiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: [
+              {
+                price_id: priceId,
+                quantity: 1
+              }
+            ],
+            customer: {
+              email: customerEmail
+            },
+            custom_data: {
+              user_email: customerEmail
+            },
+            checkout: {
+              url: successUrl || `${req.headers.origin}/dashboard?purchase=success`
+            }
+          })
+        });
 
-    if (environment === 'sandbox') {
-      checkoutUrls.unshift(
-        `https://sandbox-checkout.paddle.com/checkout?_ptxn=${priceId}&customer_email=${encodeURIComponent(customerEmail)}`,
-        `https://sandbox-checkout.paddle.com/${priceId}?customer_email=${encodeURIComponent(customerEmail)}`
-      );
+        const data = await response.json();
+        
+        if (response.ok && data.data && data.data.checkout) {
+          return res.status(200).json({
+            success: true,
+            checkoutUrl: data.data.checkout.url,
+            transactionId: data.data.id,
+            method: 'api'
+          });
+        } else {
+          console.warn('API transaction creation failed:', data);
+        }
+      } catch (apiError) {
+        console.warn('API approach failed:', apiError);
+      }
     }
 
-    // Return the first URL to try
-    const checkoutUrl = checkoutUrls[0];
+    // Fallback: Generate Paddle.js compatible checkout URL
+    // This creates a URL that can be used with Paddle.js overlay checkout
+    const baseUrl = window.location ? window.location.origin : req.headers.origin;
+    
+    // Create a checkout URL that will use Paddle.js
+    const checkoutUrl = `${baseUrl}/checkout?priceId=${priceId}&email=${encodeURIComponent(customerEmail)}&success=${encodeURIComponent(successUrl || `${baseUrl}/dashboard?purchase=success`)}&cancel=${encodeURIComponent(cancelUrl || `${baseUrl}/pricing`)}`;
 
-    console.log('Generated checkout URL:', checkoutUrl);
+    console.log('Generated fallback checkout URL:', checkoutUrl);
 
     return res.status(200).json({
       success: true,
       checkoutUrl,
-      allUrls: checkoutUrls, // For debugging
       priceId,
       customerEmail,
-      environment
+      environment,
+      method: 'fallback',
+      note: 'Using fallback method. Configure PADDLE_API_KEY for direct API integration.'
     });
 
   } catch (error) {
