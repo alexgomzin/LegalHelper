@@ -166,6 +166,13 @@ export default function Checkout() {
       return;
     }
 
+    // Validate price ID format
+    if (!priceId.startsWith('pri_')) {
+      setCheckoutError('Invalid price ID format. Please contact support.');
+      console.error('Invalid price ID:', priceId);
+      return;
+    }
+
     const customerEmail = email || user?.email;
     if (!customerEmail) {
       setCheckoutError('No customer email available. Please login or provide email.');
@@ -178,7 +185,14 @@ export default function Checkout() {
     // Try Paddle.js first if loaded
     if (paddleLoaded && window.Paddle) {
       try {
-        window.Paddle.Checkout.open({
+        console.log('Opening Paddle checkout with:', {
+          priceId,
+          customerEmail,
+          successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
+          cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
+        });
+
+        const checkoutResult = window.Paddle.Checkout.open({
           items: [
             {
               priceId: priceId,
@@ -189,13 +203,12 @@ export default function Checkout() {
             email: customerEmail
           },
           settings: {
-            displayMode: 'overlay',
-            locale: 'en',
-            theme: 'light',
             successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
             cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
           }
         });
+        
+        console.log('Paddle checkout result:', checkoutResult);
         setIsProcessing(false);
         return;
       } catch (error) {
