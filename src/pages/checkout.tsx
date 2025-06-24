@@ -272,21 +272,28 @@ export default function Checkout() {
             settings: {
               displayMode: "overlay",
               theme: "light",
-              locale: "en",
-              successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
-              cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
+              locale: "en"
             }
           };
           
           console.log('Opening Paddle checkout with data:', checkoutData);
+          console.log('Paddle object methods:', Object.keys(window.Paddle));
+          console.log('Paddle Checkout methods:', window.Paddle.Checkout ? Object.keys(window.Paddle.Checkout) : 'No Checkout object');
           
           // Use Paddle.js checkout
-          window.Paddle.Checkout.open(checkoutData);
+          const checkoutPromise = window.Paddle.Checkout.open(checkoutData);
+          console.log('Paddle checkout promise:', checkoutPromise);
+          
           return; // Exit here if Paddle.js works
           
         } catch (paddleError) {
           console.error('Paddle.js checkout failed:', paddleError);
           console.error('Full error details:', JSON.stringify(paddleError, null, 2));
+          if (paddleError instanceof Error) {
+            console.error('Error name:', paddleError.name);
+            console.error('Error message:', paddleError.message);
+            console.error('Error stack:', paddleError.stack);
+          }
           setCheckoutError(`Paddle.js Error: ${paddleError instanceof Error ? paddleError.message : 'Unknown error'}. Check console for details.`);
           // Don't return here, fall through to API approach
         }
