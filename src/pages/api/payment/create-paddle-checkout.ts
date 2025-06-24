@@ -29,62 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? 'https://api.paddle.com/transactions'
       : 'https://sandbox-api.paddle.com/transactions';
 
-    // Check if we have API key configured
-    const apiKey = process.env.PADDLE_API_KEY;
-    
-    if (apiKey) {
-      console.log('Attempting Paddle API transaction creation...');
-      // Try creating transaction via API
-      try {
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = req.headers.host;
-        const baseUrl = `${protocol}://${host}`;
-        
-        const response = await fetch(paddleApiUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            items: [
-              {
-                price_id: priceId,
-                quantity: 1
-              }
-            ],
-            customer: {
-              email: customerEmail
-            },
-            custom_data: {
-              user_email: customerEmail
-            },
-            checkout: {
-              url: successUrl || `${baseUrl}/dashboard?purchase=success`
-            }
-          })
-        });
-
-        const data = await response.json();
-        console.log('Paddle API response:', { status: response.status, data });
-        
-        if (response.ok && data.data && data.data.checkout) {
-          console.log('Successfully created checkout via Paddle API');
-          return res.status(200).json({
-            success: true,
-            checkoutUrl: data.data.checkout.url,
-            transactionId: data.data.id,
-            method: 'api'
-          });
-        } else {
-          console.warn('API transaction creation failed:', { status: response.status, data });
-        }
-      } catch (apiError) {
-        console.warn('API approach failed:', apiError);
-      }
-    } else {
-      console.log('No PADDLE_API_KEY configured, using fallback method');
-    }
+    // Skip API approach for now due to Default Payment Link requirement
+    console.log('Skipping API approach, using direct URL method instead');
 
     // Try direct Paddle checkout URL approach
     // For Paddle Billing, we need to use their hosted checkout
