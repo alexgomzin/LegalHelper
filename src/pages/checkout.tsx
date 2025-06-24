@@ -63,66 +63,91 @@ export default function Checkout() {
 
   // Load Paddle.js for Paddle Billing
   useEffect(() => {
+    console.log('Starting Paddle.js loading process...');
+    
+    // Check if Paddle is already loaded
+    if (window.Paddle) {
+      console.log('Paddle already loaded');
+      setPaddleLoaded(true);
+      return;
+    }
+
     const script = document.createElement('script');
     script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
     script.async = true;
+    
     script.onload = () => {
-      if (window.Paddle) {
-        const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
-        const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
-        
-        console.log('Initializing Paddle with:', { environment, hasClientToken: !!clientToken });
-        
-        if (!clientToken) {
-          console.error('NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is not configured');
-          setCheckoutError('Payment system configuration error. Please contact support.');
-          return;
-        }
-        
-        try {
-          // Set environment first for sandbox
-          if (environment === 'sandbox') {
-            window.Paddle.Environment.set('sandbox');
+      console.log('Paddle script loaded, checking window.Paddle...');
+      
+      // Wait a bit for Paddle to initialize
+      setTimeout(() => {
+        if (window.Paddle) {
+          const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
+          const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+          
+          console.log('Initializing Paddle with:', { environment, hasClientToken: !!clientToken });
+          
+          if (!clientToken) {
+            console.error('NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is not configured');
+            setCheckoutError('Payment system configuration error. Please contact support.');
+            return;
           }
           
-          // Initialize Paddle with the correct parameters for Paddle Billing
-          window.Paddle.Initialize({
-            token: clientToken,
-            eventCallback: function(data: any) {
-              console.log('Paddle event:', data);
-              
-              if (data.name === 'checkout.completed') {
-                setIsProcessing(true);
-                handleSuccessfulPurchase(data);
-              }
-              
-              if (data.name === 'checkout.error') {
-                setCheckoutError(data.error?.message || 'Checkout failed');
-              }
+          try {
+            // Set environment first for sandbox
+            if (environment === 'sandbox') {
+              window.Paddle.Environment.set('sandbox');
             }
-          });
-          console.log('Paddle initialized successfully');
-          setPaddleLoaded(true);
-        } catch (error) {
-          console.error('Failed to initialize Paddle:', error);
-          setCheckoutError('Failed to initialize payment system. Please refresh the page.');
+            
+            // Initialize Paddle with the correct parameters for Paddle Billing
+            window.Paddle.Initialize({
+              token: clientToken,
+              eventCallback: function(data: any) {
+                console.log('Paddle event:', data);
+                
+                if (data.name === 'checkout.completed') {
+                  setIsProcessing(true);
+                  handleSuccessfulPurchase(data);
+                }
+                
+                if (data.name === 'checkout.error') {
+                  setCheckoutError(data.error?.message || 'Checkout failed');
+                }
+              }
+            });
+            console.log('Paddle initialized successfully');
+            setPaddleLoaded(true);
+          } catch (error) {
+            console.error('Failed to initialize Paddle:', error);
+            setCheckoutError('Failed to initialize payment system. Please refresh the page.');
+          }
+        } else {
+          console.error('Paddle SDK still not available after script load');
+          // Try one more time after a longer delay
+          setTimeout(() => {
+            if (window.Paddle) {
+              console.log('Paddle finally loaded after delay');
+              setPaddleLoaded(true);
+            } else {
+              console.error('Paddle SDK never loaded - possible network issue or CDN blocked');
+              setCheckoutError('Payment system failed to load. Please check your internet connection and refresh the page.');
+            }
+          }, 1000);
         }
-      } else {
-        console.error('Paddle SDK not loaded');
-        setCheckoutError('Payment system failed to load. Please refresh the page.');
-      }
+      }, 100); // Wait 100ms for Paddle to be available
     };
     
     script.onerror = () => {
-      console.error('Failed to load Paddle script');
+      console.error('Failed to load Paddle script from CDN - network error or CDN blocked');
       setCheckoutError('Failed to load payment system. Please check your connection and refresh.');
     };
     
-    document.body.appendChild(script);
+    console.log('Adding Paddle script to document...');
+    document.head.appendChild(script); // Try head instead of body
 
     return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
       }
     };
   }, []);
@@ -201,6 +226,10 @@ export default function Checkout() {
           ],
           customer: {
             email: customerEmail
+          },
+          settings: {
+            successUrl: `${window.location.origin}/dashboard?purchase=success`,
+            cancelUrl: `${window.location.origin}/pricing?purchase=cancelled`
           }
         });
         
@@ -391,6 +420,42 @@ export default function Checkout() {
             {checkoutError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                 <strong>Error:</strong> {checkoutError}
+                <button 
+                  onClick={() => {
+                    console.log('=== MANUAL DEBUG CHECK ===');
+                    console.log('window.Paddle:', window.Paddle);
+                    console.log('typeof window.Paddle:', typeof window.Paddle);
+                    console.log('window.Paddle keys:', window.Paddle ? Object.keys(window.Paddle) : 'N/A');
+                    console.log('Environment variables:', {
+                      environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+                      clientToken: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+                      priceId: priceId
+                    });
+                    console.log('Script tags in document:', Array.from(document.querySelectorAll('script')).map(s => s.src).filter(src => src.includes('paddle')));
+                    
+                    // Try to manually load Paddle if it's not there
+                    if (!window.Paddle) {
+                      console.log('Attempting manual Paddle load...');
+                      const script = document.createElement('script');
+                      script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+                      script.onload = () => {
+                        console.log('Manual script loaded, window.Paddle:', window.Paddle);
+                        if (window.Paddle) {
+                          setPaddleLoaded(true);
+                          setCheckoutError('');
+                        }
+                      };
+                      document.head.appendChild(script);
+                    } else {
+                      console.log('Paddle exists, clearing error');
+                      setPaddleLoaded(true);
+                      setCheckoutError('');
+                    }
+                  }}
+                  className="ml-4 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                >
+                  Debug & Retry
+                </button>
               </div>
             )}
 
