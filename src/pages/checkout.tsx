@@ -30,27 +30,50 @@ export default function Checkout() {
     if (router.isReady) {
       const { plan, product, priceId: queryPriceId, email: queryEmail, success, cancel } = router.query;
       
+      // Debug logging
+      console.log('=== CHECKOUT DEBUG ===');
+      console.log('Router query:', router.query);
+      console.log('Plan from URL:', plan);
+      console.log('Product from URL:', product);
+      console.log('Direct priceId from URL:', queryPriceId);
+      
+      // Map plan to price ID
+      const planToPriceId: { [key: string]: string } = {
+        'payg': 'pri_01jxr3y58530jpe07e9cttnamc',
+        'pack5': 'pri_01jxr3zc1d20kdagx69ht75c5y',
+        'pack15': 'pri_01jxr4273t1g8fsdje12v8ztwt',
+        'pack30': 'pri_01jxr44atsbpkaam04an1cm6rc',
+        'subscription': 'pri_01jxr46gefp8dv3cp12h6xs607'
+      };
+      
       if (plan) {
         setSelectedPlan(plan as string);
-        // Map plan to price ID
-        const planToPriceId: { [key: string]: string } = {
-          'payg': 'pri_01jxr3y58530jpe07e9cttnamc',
-          'pack5': 'pri_01jxr3zc1d20kdagx69ht75c5y',
-          'pack15': 'pri_01jxr4273t1g8fsdje12v8ztwt',
-          'pack30': 'pri_01jxr44atsbpkaam04an1cm6rc',
-          'subscription': 'pri_01jxr46gefp8dv3cp12h6xs607'
-        };
         
         if (planToPriceId[plan as string]) {
-          setPriceId(planToPriceId[plan as string]);
+          const mappedPriceId = planToPriceId[plan as string];
+          setPriceId(mappedPriceId);
+          console.log('Mapped plan to price ID:', plan, '->', mappedPriceId);
+        } else {
+          console.log('No mapping found for plan:', plan);
         }
       }
       
       if (product) setSelectedProduct(product as string);
-      if (queryPriceId) setPriceId(queryPriceId as string); // Direct price ID overrides plan mapping
+      if (queryPriceId) {
+        setPriceId(queryPriceId as string); // Direct price ID overrides plan mapping
+        console.log('Using direct price ID from URL:', queryPriceId);
+      }
       if (queryEmail) setEmail(queryEmail as string);
       if (success) setSuccessUrl(success as string);
       if (cancel) setCancelUrl(cancel as string);
+      
+      console.log('Final state:', {
+        selectedPlan: plan,
+        selectedProduct: product,
+        priceId: queryPriceId || (plan ? planToPriceId[plan as string] : ''),
+        email: queryEmail
+      });
+      console.log('=== END DEBUG ===');
     }
   }, [router.isReady, router.query]);
 
@@ -210,9 +233,9 @@ export default function Checkout() {
     // SKIP Paddle.js for now - use API approach only
     console.log('Skipping Paddle.js, using API approach directly');
 
-    // Fallback: Use API to create checkout URL
+    // Use API to create checkout URL
     try {
-      console.log('Using API fallback for checkout');
+      console.log('Creating Paddle checkout via API...');
       const response = await fetch('/api/payment/create-paddle-checkout', {
         method: 'POST',
         headers: {
@@ -226,17 +249,20 @@ export default function Checkout() {
         }),
       });
 
+      console.log('API Response Status:', response.status);
       const data = await response.json();
+      console.log('API Response Data:', data);
 
       if (data.success && data.checkoutUrl) {
         console.log('Redirecting to checkout URL:', data.checkoutUrl);
         window.location.href = data.checkoutUrl;
       } else {
-        setCheckoutError(data.error || 'Failed to create checkout. Please try again.');
+        console.error('API Error:', data);
+        setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
       }
     } catch (error) {
-      console.error('API checkout failed:', error);
-      setCheckoutError('Failed to create checkout. Please try again or contact support.');
+      console.error('API request failed:', error);
+      setCheckoutError(`Network Error: ${error instanceof Error ? error.message : 'Failed to create checkout'}`);
     } finally {
       setIsProcessing(false);
     }
