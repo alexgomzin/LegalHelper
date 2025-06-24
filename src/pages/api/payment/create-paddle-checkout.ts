@@ -16,33 +16,87 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const environment = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'sandbox';
     const vendorId = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
+    const apiKey = process.env.PADDLE_API_KEY;
+
+    // For sandbox mode, try multiple approaches
+    if (environment === 'sandbox') {
+      console.log('Sandbox mode - trying multiple checkout methods...');
+      
+      // Method 1: Try API if available
+      if (apiKey && vendorId) {
+        console.log('Attempting API checkout with credentials...');
+        
+        const paddleApiUrl = 'https://sandbox-api.paddle.com/transactions';
+        
+        try {
+          const response = await fetch(paddleApiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              items: [
+                {
+                  price_id: priceId,
+                  quantity: 1
+                }
+              ],
+              customer: {
+                email: customerEmail
+              },
+              checkout: {
+                url: successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success'
+              }
+            })
+          });
+
+          const data = await response.json();
+          console.log('Paddle API response:', { status: response.status, data });
+          
+          if (response.ok && data.data && data.data.checkout) {
+            console.log('Successfully created checkout via Paddle API');
+            return res.status(200).json({
+              success: true,
+              checkoutUrl: data.data.checkout.url,
+              transactionId: data.data.id,
+              method: 'api'
+            });
+          } else {
+            console.log('API failed, falling back to direct URL method');
+          }
+        } catch (apiError) {
+          console.log('API request failed, falling back to direct URL method:', apiError);
+        }
+      }
+      
+      // Method 2: Direct sandbox URL (works for testing)
+      console.log('Using direct sandbox checkout URL...');
+      const directSandboxUrl = `https://sandbox-checkout.paddle.com/checkout?price=${priceId}&customer_email=${encodeURIComponent(customerEmail)}&success_url=${encodeURIComponent(successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success')}&cancel_url=${encodeURIComponent(cancelUrl || 'https://legalhelper.onrender.com/pricing?purchase=cancelled')}`;
+      
+      return res.status(200).json({
+        success: true,
+        checkoutUrl: directSandboxUrl,
+        method: 'direct_sandbox_url',
+        note: 'Using direct sandbox URL for testing'
+      });
+    }
+
+    // Production mode - requires API key
+    if (!apiKey) {
+      return res.status(500).json({ 
+        error: 'Paddle API key not configured for production. Please set PADDLE_API_KEY environment variable.',
+        note: 'You need to create a Paddle API key in your dashboard under Developer Tools > Authentication'
+      });
+    }
 
     if (!vendorId) {
       return res.status(500).json({ error: 'Paddle vendor ID not configured' });
     }
 
-    // Since we don't have Paddle API key configured yet, we'll create a checkout URL
-    // that can be used with Paddle.js or try direct API approach
+    // Production API call
+    const paddleApiUrl = 'https://api.paddle.com/transactions';
     
-    // For testing purposes, let's try creating a transaction first
-    const paddleApiUrl = environment === 'production'
-      ? 'https://api.paddle.com/transactions'
-      : 'https://sandbox-api.paddle.com/transactions';
-
-    // Skip API approach for now due to Default Payment Link requirement
-    console.log('Skipping API approach, using direct URL method instead');
-
-    // For Paddle Billing, we need to create a transaction and get its checkout URL
-    // This requires the PADDLE_API_KEY to be configured
-    const apiKey = process.env.PADDLE_API_KEY;
-    
-    if (!apiKey) {
-      return res.status(500).json({ 
-        error: 'Paddle API key not configured. Please set PADDLE_API_KEY environment variable.',
-        note: 'You need to create a Paddle API key in your dashboard under Developer Tools > Authentication'
-      });
-    }
-
     try {
       const response = await fetch(paddleApiUrl, {
         method: 'POST',
@@ -78,7 +132,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           method: 'api'
         });
       } else {
-        console.error('API transaction creation failed:', { status: response.status, data });
+        console.error('Production API transaction creation failed:', { status: response.status, data });
         return res.status(400).json({ 
           error: 'Failed to create Paddle checkout',
           details: data.error || 'Unknown error',
@@ -86,18 +140,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
     } catch (apiError) {
-      console.error('API request failed:', apiError);
+      console.error('Production API request failed:', apiError);
       return res.status(500).json({ 
         error: 'Failed to communicate with Paddle API',
         details: apiError instanceof Error ? apiError.message : 'Unknown error'
       });
     }
-
-    // This code should not be reached since we handle API response above
-    return res.status(500).json({
-      error: 'Unexpected code path reached',
-      note: 'This should not happen - please check the API implementation'
-    });
 
   } catch (error) {
     console.error('Error creating Paddle checkout:', error);

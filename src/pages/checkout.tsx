@@ -248,11 +248,47 @@ export default function Checkout() {
     setCheckoutError('');
     setIsProcessing(true);
 
-    // SKIP Paddle.js for now - use API approach only
-    console.log('Skipping Paddle.js, using API approach directly');
-
-    // Use API to create checkout URL
     try {
+      // First try to use Paddle.js if available and properly loaded
+      if (window.Paddle && paddleLoaded) {
+        console.log('Using Paddle.js for checkout...');
+        
+        try {
+          const checkoutData = {
+            items: [
+              {
+                priceId: priceId,
+                quantity: 1
+              }
+            ],
+            customer: {
+              email: customerEmail
+            },
+            settings: {
+              displayMode: "overlay",
+              theme: "light",
+              locale: "en",
+              successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
+              cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
+            }
+          };
+          
+          console.log('Opening Paddle checkout with data:', checkoutData);
+          
+          // Use Paddle.js checkout
+          window.Paddle.Checkout.open(checkoutData);
+          return; // Exit here if Paddle.js works
+          
+        } catch (paddleError) {
+          console.error('Paddle.js checkout failed:', paddleError);
+          setCheckoutError(`Paddle.js Error: ${paddleError instanceof Error ? paddleError.message : 'Unknown error'}`);
+          // Don't return here, fall through to API approach
+        }
+      } else {
+        console.log('Paddle.js not available, using API approach...');
+      }
+
+      // Fallback: Use API to create checkout URL
       console.log('Creating Paddle checkout via API...');
       const response = await fetch('/api/payment/create-paddle-checkout', {
         method: 'POST',
@@ -276,10 +312,19 @@ export default function Checkout() {
         window.location.href = data.checkoutUrl;
       } else {
         console.error('API Error:', data);
-        setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
+        
+        // If API also fails, create a manual checkout URL for sandbox testing
+        if (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'sandbox') {
+          console.log('Creating manual sandbox checkout URL...');
+          const sandboxUrl = `https://sandbox-checkout.paddle.com/checkout?price=${priceId}&customer_email=${encodeURIComponent(customerEmail)}&success_url=${encodeURIComponent(successUrl || `${window.location.origin}/dashboard?purchase=success`)}&cancel_url=${encodeURIComponent(cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`)}`;
+          console.log('Trying sandbox URL:', sandboxUrl);
+          window.location.href = sandboxUrl;
+        } else {
+          setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
+        }
       }
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('Checkout process failed:', error);
       setCheckoutError(`Network Error: ${error instanceof Error ? error.message : 'Failed to create checkout'}`);
     } finally {
       setIsProcessing(false);
@@ -473,20 +518,31 @@ export default function Checkout() {
 
             {/* Checkout Button */}
             <div className="text-center">
-                          <button
-              onClick={initiatePaddleCheckout}
-              disabled={isProcessing || !priceId || !customerEmail}
-              className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-            >
-              {isProcessing ? 'Processing...' : 'Proceed to Payment'}
-            </button>
-            
-            <p className="text-sm text-gray-500 mt-2">
-              {!paddleLoaded && !checkoutError && 'Loading payment system...'}
-              {!priceId && 'Missing price information'}
-              {!customerEmail && 'Missing customer email'}
-              {paddleLoaded && priceId && customerEmail && 'Ready to proceed'}
-            </p>
+              <button
+                onClick={() => {
+                  console.log('=== CHECKOUT BUTTON CLICKED ===');
+                  console.log('Current state:', {
+                    priceId,
+                    customerEmail,
+                    paddleLoaded,
+                    isProcessing,
+                    checkoutError
+                  });
+                  initiatePaddleCheckout();
+                }}
+                disabled={isProcessing || !priceId || !customerEmail}
+                className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+              >
+                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+              </button>
+              
+              <p className="text-sm text-gray-500 mt-2">
+                {!paddleLoaded && !checkoutError && 'Loading payment system...'}
+                {!priceId && 'Missing price information'}
+                {!customerEmail && 'Missing customer email'}
+                {paddleLoaded && priceId && customerEmail && !isProcessing && 'Ready to proceed'}
+                {isProcessing && 'Initiating checkout...'}
+              </p>
             </div>
 
             {/* Back to Pricing Link */}
