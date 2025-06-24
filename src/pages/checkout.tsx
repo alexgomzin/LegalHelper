@@ -218,13 +218,20 @@ export default function Checkout() {
   };
 
   const initiatePaddleCheckout = async () => {
+    console.log('=== INITIATE PADDLE CHECKOUT CALLED ===');
+    console.log('priceId:', priceId);
+    console.log('email:', email);
+    console.log('user?.email:', user?.email);
+    
     if (!priceId) {
+      console.log('ERROR: No price selected');
       setCheckoutError('No price selected. Please return to pricing page.');
       return;
     }
 
     // Validate price ID format
     if (!priceId.startsWith('pri_')) {
+      console.log('ERROR: Invalid price ID format:', priceId);
       setCheckoutError('Invalid price ID format. Please contact support.');
       console.error('Invalid price ID:', priceId);
       return;
@@ -232,10 +239,12 @@ export default function Checkout() {
 
     const customerEmail = email || user?.email;
     if (!customerEmail) {
+      console.log('ERROR: No customer email available');
       setCheckoutError('No customer email available. Please login or provide email.');
       return;
     }
 
+    console.log('All validations passed, proceeding with checkout...');
     setCheckoutError('');
     setIsProcessing(true);
 
