@@ -86,16 +86,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('No PADDLE_API_KEY configured, using fallback method');
     }
 
-    // Fallback: Generate Paddle.js compatible checkout URL
-    // This creates a URL that can be used with Paddle.js overlay checkout
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers.host;
-    const baseUrl = `${protocol}://${host}`;
+    // Try direct Paddle checkout URL approach
+    // For Paddle Billing, we need to use their hosted checkout
+    const paddleCheckoutUrl = environment === 'production'
+      ? 'https://checkout.paddle.com'
+      : 'https://sandbox-checkout.paddle.com';
     
-    // Create a checkout URL that will use Paddle.js
-    const checkoutUrl = `${baseUrl}/checkout?priceId=${priceId}&email=${encodeURIComponent(customerEmail)}&success=${encodeURIComponent(successUrl || `${baseUrl}/dashboard?purchase=success`)}&cancel=${encodeURIComponent(cancelUrl || `${baseUrl}/pricing`)}`;
+    // Try creating a simple checkout URL
+    const checkoutUrl = `${paddleCheckoutUrl}/checkout?price_id=${priceId}&customer_email=${encodeURIComponent(customerEmail)}&success_url=${encodeURIComponent(successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success')}&cancel_url=${encodeURIComponent(cancelUrl || 'https://legalhelper.onrender.com/pricing')}`;
 
-    console.log('Generated fallback checkout URL:', checkoutUrl);
+    console.log('Generated direct Paddle checkout URL:', checkoutUrl);
 
     return res.status(200).json({
       success: true,
@@ -103,8 +103,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       priceId,
       customerEmail,
       environment,
-      method: 'fallback',
-      note: 'Using fallback method. Configure PADDLE_API_KEY for direct API integration.'
+      method: 'direct_url',
+      note: 'Using direct Paddle checkout URL. This should redirect to Paddle hosted checkout.'
     });
 
   } catch (error) {
