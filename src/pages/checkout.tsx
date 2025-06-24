@@ -37,14 +37,23 @@ export default function Checkout() {
       console.log('Product from URL:', product);
       console.log('Direct priceId from URL:', queryPriceId);
       
-      // Map plan to price ID
+      // Map plan to price ID using environment variables
       const planToPriceId: { [key: string]: string } = {
-        'payg': 'pri_01jxr3y58530jpe07e9cttnamc',
-        'pack5': 'pri_01jxr3zc1d20kdagx69ht75c5y',
-        'pack15': 'pri_01jxr4273t1g8fsdje12v8ztwt',
-        'pack30': 'pri_01jxr44atsbpkaam04an1cm6rc',
-        'subscription': 'pri_01jxr46gefp8dv3cp12h6xs607'
+        'payg': process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || '',
+        'pack5': process.env.NEXT_PUBLIC_PADDLE_5_PACK || '',
+        'pack15': process.env.NEXT_PUBLIC_PADDLE_15_PACK || '',
+        'pack30': process.env.NEXT_PUBLIC_PADDLE_30_PACK || '',
+        'subscription': process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || ''
       };
+      
+      console.log('Environment variables:', {
+        PADDLE_PAY_PER_DOCUMENT: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT,
+        PADDLE_5_PACK: process.env.NEXT_PUBLIC_PADDLE_5_PACK,
+        PADDLE_15_PACK: process.env.NEXT_PUBLIC_PADDLE_15_PACK,
+        PADDLE_30_PACK: process.env.NEXT_PUBLIC_PADDLE_30_PACK,
+        PADDLE_SUBSCRIPTION: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+      });
+      console.log('Plan to Price ID mapping:', planToPriceId);
       
       if (plan) {
         setSelectedPlan(plan as string);
@@ -271,32 +280,32 @@ export default function Checkout() {
   const getPriceDetails = () => {
     // Map both price IDs and plan IDs to plan details
     const priceMap: { [key: string]: any } = {
-      // Price ID mappings
-      'pri_01jxr3y58530jpe07e9cttnamc': {
+      // Price ID mappings using environment variables
+      [process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || '']: {
         title: 'Pay-as-you-go',
         price: '$1.50',
         description: 'Per document analysis',
         features: ['No subscription required', 'Pay only when you need analysis', 'All analysis features included']
       },
-      'pri_01jxr3zc1d20kdagx69ht75c5y': {
+      [process.env.NEXT_PUBLIC_PADDLE_5_PACK || '']: {
         title: 'Starter Pack',
         price: '$5.50',
         description: '5 analyses ($1.10 each)',
         features: ['Credits never expire', 'All analysis features included', 'Perfect for occasional use']
       },
-      'pri_01jxr4273t1g8fsdje12v8ztwt': {
+      [process.env.NEXT_PUBLIC_PADDLE_15_PACK || '']: {
         title: 'Professional Pack',
         price: '$12.00',
         description: '15 analyses ($0.80 each)',
         features: ['Credits never expire', 'All analysis features included', 'Save 47% vs pay-as-you-go', 'Most popular choice']
       },
-      'pri_01jxr44atsbpkaam04an1cm6rc': {
+      [process.env.NEXT_PUBLIC_PADDLE_30_PACK || '']: {
         title: 'Business Pack',
         price: '$22.50',
         description: '30 analyses ($0.75 each)',
         features: ['Credits never expire', 'All analysis features included', 'Save 50% vs pay-as-you-go', 'Best value for teams']
       },
-      'pri_01jxr46gefp8dv3cp12h6xs607': {
+      [process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || '']: {
         title: 'Monthly Subscription',
         price: '$30.00',
         description: '50 analyses per month ($0.60 each)',
