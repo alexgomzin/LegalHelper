@@ -210,35 +210,43 @@ export default function Checkout() {
     // Try Paddle.js first if loaded
     if (paddleLoaded && window.Paddle) {
       try {
-        console.log('Opening Paddle checkout with:', {
+        console.log('Opening Paddle checkout with minimal config:', {
           priceId,
-          customerEmail,
-          successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
-          cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
+          customerEmail
         });
 
+        // Use minimal configuration to avoid 400 errors
         const checkoutResult = window.Paddle.Checkout.open({
           items: [
             {
               priceId: priceId,
               quantity: 1
             }
-          ],
-          customer: {
-            email: customerEmail
-          },
-          settings: {
-            successUrl: `${window.location.origin}/dashboard?purchase=success`,
-            cancelUrl: `${window.location.origin}/pricing?purchase=cancelled`
-          }
+          ]
         });
         
         console.log('Paddle checkout result:', checkoutResult);
+        
+        // If minimal config works, we can add more settings later
+        if (checkoutResult) {
+          console.log('Checkout opened successfully with minimal config');
+        }
         setIsProcessing(false);
         return;
       } catch (error) {
         console.error('Paddle.js checkout failed:', error);
-        setCheckoutError('Paddle checkout failed, trying alternative method...');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error details:', {
+          message: errorMessage,
+          priceId: priceId
+        });
+        
+        // Check if it's a price ID issue
+        if (errorMessage.includes('price')) {
+          setCheckoutError(`Price ID error: ${errorMessage}. Please verify the price ID in Paddle dashboard.`);
+        } else {
+          setCheckoutError(`Paddle checkout failed: ${errorMessage}. Trying alternative method...`);
+        }
       }
     }
 
