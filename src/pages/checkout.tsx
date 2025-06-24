@@ -201,10 +201,6 @@ export default function Checkout() {
           ],
           customer: {
             email: customerEmail
-          },
-          settings: {
-            successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
-            cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
           }
         });
         
