@@ -143,7 +143,12 @@ export default function Checkout() {
                 }
                 
                 if (data.name === 'checkout.error') {
-                  setCheckoutError(data.error?.message || 'Checkout failed');
+                  console.error('Paddle checkout error event:', data);
+                  setCheckoutError(`Checkout Error: ${data.error?.message || 'Unknown checkout error'}`);
+                }
+                
+                if (data.name === 'checkout.warning') {
+                  console.warn('Paddle checkout warning:', data);
                 }
               }
             });
@@ -250,7 +255,7 @@ export default function Checkout() {
 
     try {
       // First try to use Paddle.js if available and properly loaded
-      if (window.Paddle && paddleLoaded) {
+      if (window.Paddle && paddleLoaded && process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) {
         console.log('Using Paddle.js for checkout...');
         
         try {
@@ -281,11 +286,16 @@ export default function Checkout() {
           
         } catch (paddleError) {
           console.error('Paddle.js checkout failed:', paddleError);
-          setCheckoutError(`Paddle.js Error: ${paddleError instanceof Error ? paddleError.message : 'Unknown error'}`);
+          console.error('Full error details:', JSON.stringify(paddleError, null, 2));
+          setCheckoutError(`Paddle.js Error: ${paddleError instanceof Error ? paddleError.message : 'Unknown error'}. Check console for details.`);
           // Don't return here, fall through to API approach
         }
       } else {
-        console.log('Paddle.js not available, using API approach...');
+        if (!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN) {
+          console.log('Client token missing, using API approach directly...');
+        } else {
+          console.log('Paddle.js not available, using API approach...');
+        }
       }
 
       // Fallback: Use API to create checkout URL
