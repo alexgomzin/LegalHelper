@@ -8,6 +8,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('=== PADDLE WEBHOOK RECEIVED ===');
+    console.log('Headers:', req.headers);
+    console.log('Full body:', JSON.stringify(req.body, null, 2));
+    
     // Verify the webhook signature (if needed)
     // This is a simplified example, in production you would verify using Paddle's public key
     // const isValidSignature = verifyPaddleWebhook(req.body);
@@ -16,6 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // }
 
     const { event_type, data } = req.body;
+    console.log('Event type:', event_type);
+    console.log('Event data:', JSON.stringify(data, null, 2));
 
     // Handle different webhook events (Paddle Billing format)
     switch (event_type) {
@@ -60,13 +66,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 // Helper function to handle completed transactions (one-time purchases)
 async function handleTransactionCompleted(transactionData: any) {
+  console.log('=== HANDLING TRANSACTION COMPLETED ===');
+  console.log('Transaction data:', JSON.stringify(transactionData, null, 2));
+  
   const { id: transactionId, customer_id, items, custom_data } = transactionData;
   const userId = custom_data?.user_id;
 
+  console.log('Extracted data:', { transactionId, customer_id, userId });
+  console.log('Custom data:', JSON.stringify(custom_data, null, 2));
+
   if (!userId) {
-    console.log('No user_id found in transaction custom_data:', transactionId);
+    console.error('❌ No user_id found in transaction custom_data!');
+    console.error('Transaction ID:', transactionId);
+    console.error('Custom data received:', custom_data);
     return;
   }
+
+  console.log('✅ Found user_id:', userId);
 
   // Get user details
   const { data: user, error: userError } = await supabase
@@ -103,17 +119,28 @@ async function handleTransactionCompleted(transactionData: any) {
   }
 
   if (creditsToAdd > 0) {
+    console.log(`💰 Adding ${creditsToAdd} credits to user ${userId}`);
+    const oldCredits = user.credits_remaining || 0;
+    const newCredits = oldCredits + creditsToAdd;
+    
     // Update user credits
-    await supabase
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        credits_remaining: (user.credits_remaining || 0) + creditsToAdd,
+        credits_remaining: newCredits,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId);
 
+    if (updateError) {
+      console.error('❌ Failed to update user credits:', updateError);
+      throw updateError;
+    }
+
+    console.log(`✅ Credits updated: ${oldCredits} → ${newCredits}`);
+
     // Log the transaction
-    await supabase.from('transactions').insert({
+    const { error: txError } = await supabase.from('transactions').insert({
       user_id: userId,
       product_id: items[0]?.price?.id || 'unknown',
       amount: totalAmount,
@@ -122,8 +149,14 @@ async function handleTransactionCompleted(transactionData: any) {
       created_at: new Date().toISOString(),
     });
 
+    if (txError) {
+      console.error('❌ Failed to log transaction:', txError);
+    } else {
+      console.log('✅ Transaction logged successfully');
+    }
+
     // Store the purchase record
-    await supabase.from('user_purchases').insert({
+    const { error: purchaseError } = await supabase.from('user_purchases').insert({
       user_id: userId,
       checkout_id: transactionId,
       product_id: items[0]?.price?.id || 'unknown',
@@ -132,6 +165,14 @@ async function handleTransactionCompleted(transactionData: any) {
       purchase_date: new Date().toISOString(),
       status: 'completed'
     });
+
+    if (purchaseError) {
+      console.error('❌ Failed to log purchase:', purchaseError);
+    } else {
+      console.log('✅ Purchase logged successfully');
+    }
+  } else {
+    console.error('❌ No credits to add! Product ID not recognized or invalid');
   }
 
   // Log the event

@@ -269,6 +269,9 @@ export default function Checkout() {
             customer: {
               email: customerEmail
             },
+            customData: {
+              user_id: user?.id
+            },
             settings: {
               displayMode: "overlay",
               theme: "light",
@@ -315,6 +318,7 @@ export default function Checkout() {
         body: JSON.stringify({
           priceId: priceId,
           customerEmail: customerEmail,
+          userId: user?.id,
           successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
           cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
         }),

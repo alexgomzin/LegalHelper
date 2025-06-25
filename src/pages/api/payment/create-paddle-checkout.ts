@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { priceId, customerEmail, successUrl, cancelUrl } = req.body;
+    const { priceId, customerEmail, successUrl, cancelUrl, userId } = req.body;
 
     if (!priceId || !customerEmail) {
       return res.status(400).json({ error: 'Missing required fields: priceId and customerEmail' });
@@ -45,6 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               customer: {
                 email: customerEmail
               },
+              custom_data: {
+                user_id: userId
+              },
               checkout: {
                 url: successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success'
               }
@@ -72,7 +75,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Method 2: Direct sandbox URL (works for testing)
       console.log('Using direct sandbox checkout URL...');
-      const directSandboxUrl = `https://sandbox-checkout.paddle.com/checkout?price=${priceId}&customer_email=${encodeURIComponent(customerEmail)}&success_url=${encodeURIComponent(successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success')}&cancel_url=${encodeURIComponent(cancelUrl || 'https://legalhelper.onrender.com/pricing?purchase=cancelled')}`;
+      const customData = userId ? `&custom_data[user_id]=${encodeURIComponent(userId)}` : '';
+      const directSandboxUrl = `https://sandbox-checkout.paddle.com/checkout?price=${priceId}&customer_email=${encodeURIComponent(customerEmail)}&success_url=${encodeURIComponent(successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success')}&cancel_url=${encodeURIComponent(cancelUrl || 'https://legalhelper.onrender.com/pricing?purchase=cancelled')}${customData}`;
       
       return res.status(200).json({
         success: true,
@@ -113,6 +117,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ],
           customer: {
             email: customerEmail
+          },
+          custom_data: {
+            user_id: userId
           },
           checkout: {
             url: successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success'
