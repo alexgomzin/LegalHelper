@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { supabase } from '@/lib/supabase';
 
 // Admin emails that get unlimited credits
 const ADMIN_EMAILS = ['g0mzinaldo@yandex.ru'];
@@ -16,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    console.log('Use credit called for user_id:', user_id);
+    console.log('Use credit called for user_id:', user_id, 'document_id:', document_id);
 
     // If this is the admin user, return success without deducting credits
     if (user_id === ADMIN_USER_ID) {
@@ -28,13 +29,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // For non-admin users, you can add regular Supabase logic here later
-    // For now, just return success (you can implement proper credit logic later)
-    console.log('Non-admin user, allowing usage for now');
+    // Get user profile from database
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .single();
+
+    if (profileError || !profile) {
+      console.log('User profile not found:', user_id);
+      return res.status(404).json({ 
+        error: 'User profile not found' 
+      });
+    }
+
+    console.log('Current user profile:', { 
+      id: profile.id, 
+      credits_remaining: profile.credits_remaining,
+      subscription_tier: profile.subscription_tier
+    });
+
+    // Check if user has credits or subscription
+    const creditsRemaining = profile.credits_remaining || 0;
+    const hasSubscription = profile.subscription_tier === 'subscription';
+
+    if (!hasSubscription && creditsRemaining <= 0) {
+      console.log('User has no credits remaining');
+      return res.status(400).json({ 
+        error: 'No credits remaining',
+        credits_remaining: 0
+      });
+    }
+
+    // For subscription users, don't deduct credits
+    if (hasSubscription) {
+      console.log('Subscription user, not deducting credits');
+      return res.status(200).json({
+        success: true,
+        credits_used: 0,
+        credits_remaining: creditsRemaining
+      });
+    }
+
+    // Deduct one credit for pay-per-use users
+    const newCreditsRemaining = creditsRemaining - 1;
+    
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ 
+        credits_remaining: newCreditsRemaining,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user_id);
+
+    if (updateError) {
+      console.error('Error updating credits:', updateError);
+      return res.status(500).json({ 
+        error: 'Failed to update credits' 
+      });
+    }
+
+    console.log('Credit deducted successfully. New balance:', newCreditsRemaining);
+
+    // Log the credit usage
+    try {
+      await supabase.from('document_usages').insert({
+        user_id,
+        document_id,
+        credits_used: 1,
+        created_at: new Date().toISOString()
+      });
+    } catch (logError) {
+      console.error('Error logging credit usage:', logError);
+      // Don't fail the request if logging fails
+    }
+
     return res.status(200).json({
       success: true,
       credits_used: 1,
-      credits_remaining: 0
+      credits_remaining: newCreditsRemaining
     });
 
   } catch (error) {

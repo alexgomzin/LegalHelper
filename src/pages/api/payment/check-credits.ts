@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { supabase } from '@/lib/supabase';
 
 // Admin emails that get unlimited credits
 const ADMIN_EMAILS = ['g0mzinaldo@yandex.ru'];
@@ -31,18 +32,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // For non-admin users, you can add regular Supabase logic here later
-    // For now, just return a default response
-    console.log('Non-admin user, returning default response');
+    // Get user profile from database
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .single();
+
+    if (profileError || !profile) {
+      console.log('User profile not found:', user_id);
+      return res.status(404).json({ 
+        error: 'User profile not found',
+        has_credits: false,
+        subscription_tier: 'free',
+        credits_remaining: 0,
+        can_analyze: false
+      });
+    }
+
+    console.log('User profile found:', { 
+      id: profile.id, 
+      credits_remaining: profile.credits_remaining,
+      subscription_tier: profile.subscription_tier
+    });
+
+    const creditsRemaining = profile.credits_remaining || 0;
+    const hasCredits = creditsRemaining > 0 || profile.subscription_tier === 'subscription';
+
     return res.status(200).json({
-      has_credits: true,
-      subscription_tier: 'free',
-      credits_remaining: 1,
-      can_analyze: true
+      has_credits: hasCredits,
+      subscription_tier: profile.subscription_tier || 'free',
+      credits_remaining: creditsRemaining,
+      can_analyze: hasCredits
     });
 
   } catch (error) {
     console.error('Error checking credits:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      has_credits: false,
+      subscription_tier: 'free',
+      credits_remaining: 0,
+      can_analyze: false
+    });
   }
 } 

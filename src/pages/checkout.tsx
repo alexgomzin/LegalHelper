@@ -337,7 +337,7 @@ export default function Checkout() {
           console.log('Trying sandbox URL:', sandboxUrl);
           window.location.href = sandboxUrl;
         } else {
-          setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
+        setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
         }
       }
     } catch (error) {
@@ -535,7 +535,7 @@ export default function Checkout() {
 
             {/* Checkout Button */}
             <div className="text-center">
-              <button
+                          <button
                 onClick={() => {
                   console.log('=== CHECKOUT BUTTON CLICKED ===');
                   console.log('Current state:', {
@@ -547,19 +547,19 @@ export default function Checkout() {
                   });
                   initiatePaddleCheckout();
                 }}
-                disabled={isProcessing || !priceId || !customerEmail}
-                className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-              >
-                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
-              </button>
-              
-              <p className="text-sm text-gray-500 mt-2">
-                {!paddleLoaded && !checkoutError && 'Loading payment system...'}
-                {!priceId && 'Missing price information'}
-                {!customerEmail && 'Missing customer email'}
+              disabled={isProcessing || !priceId || !customerEmail}
+              className="bg-blue-600 text-white py-3 px-8 rounded-lg font-semibold text-lg disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            >
+              {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+            </button>
+            
+            <p className="text-sm text-gray-500 mt-2">
+              {!paddleLoaded && !checkoutError && 'Loading payment system...'}
+              {!priceId && 'Missing price information'}
+              {!customerEmail && 'Missing customer email'}
                 {paddleLoaded && priceId && customerEmail && !isProcessing && 'Ready to proceed'}
                 {isProcessing && 'Initiating checkout...'}
-              </p>
+            </p>
             </div>
 
             {/* Back to Pricing Link */}
