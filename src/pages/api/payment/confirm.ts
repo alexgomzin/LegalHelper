@@ -7,10 +7,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('=== PAYMENT CONFIRM DEBUG ===');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('Environment variables:', {
+      PAY_PER_DOCUMENT: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT,
+      PACK_5: process.env.NEXT_PUBLIC_PADDLE_5_PACK,
+      PACK_15: process.env.NEXT_PUBLIC_PADDLE_15_PACK,
+      PACK_30: process.env.NEXT_PUBLIC_PADDLE_30_PACK,
+      SUBSCRIPTION: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+    });
+
     const { user_id, checkout_id, product_id } = req.body;
 
+    console.log('Extracted fields:', { user_id, checkout_id, product_id });
+
     if (!user_id || !checkout_id || !product_id) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      console.log('Missing fields check:', {
+        has_user_id: !!user_id,
+        has_checkout_id: !!checkout_id,
+        has_product_id: !!product_id
+      });
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        received: { user_id, checkout_id, product_id },
+        required: ['user_id', 'checkout_id', 'product_id']
+      });
     }
 
     // Verify the user exists
@@ -30,13 +51,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let isSubscription = false;
 
     console.log('Processing product_id:', product_id);
-    console.log('Environment variables:', {
-      PAY_PER_DOCUMENT: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT,
-      PACK_5: process.env.NEXT_PUBLIC_PADDLE_5_PACK,
-      PACK_15: process.env.NEXT_PUBLIC_PADDLE_15_PACK,
-      PACK_30: process.env.NEXT_PUBLIC_PADDLE_30_PACK,
-      SUBSCRIPTION: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION
-    });
 
     if (product_id === process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT) {
       creditsToAdd = 1;
