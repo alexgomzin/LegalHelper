@@ -250,7 +250,7 @@ export default function Checkout() {
         console.log('Using Paddle.js for checkout...');
         
         try {
-          const checkoutData = {
+          const checkoutData: any = {
             items: [
               {
                 priceId: priceId,
@@ -260,31 +260,29 @@ export default function Checkout() {
             customer: {
               email: customerEmail
             },
-            customData: {
-              user_id: user?.id
-            },
             settings: {
               displayMode: "overlay",
               theme: "light",
-              locale: "en"
-            }
-          };
-          
-          console.log('Opening Paddle checkout with data:', checkoutData);
-          console.log('Paddle object methods:', Object.keys(window.Paddle));
-          console.log('Paddle Checkout methods:', window.Paddle.Checkout ? Object.keys(window.Paddle.Checkout) : 'No Checkout object');
-          
-          // Use Paddle.js checkout with success/error callbacks
-          window.Paddle.Checkout.open({
-            ...checkoutData,
-            settings: {
-              ...checkoutData.settings,
+              locale: "en",
               successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
               closeUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
             }
-          });
+          };
           
-          console.log('Paddle checkout opened with success URL');
+          // Add custom data properly for Paddle.js
+          if (user?.id) {
+            checkoutData.customData = {
+              user_id: user.id
+            };
+          }
+          
+          console.log('Opening Paddle checkout with data:', checkoutData);
+          console.log('User ID being sent:', user?.id);
+          
+          // Use Paddle.js checkout
+          window.Paddle.Checkout.open(checkoutData);
+          
+          console.log('Paddle checkout opened successfully');
           
           return; // Exit here if Paddle.js works
           
