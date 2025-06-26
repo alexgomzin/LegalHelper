@@ -181,13 +181,41 @@ async function handleTransactionCompleted(transactionData: any) {
 
 // Helper function to handle subscription creation
 async function handleSubscriptionCreated(subscriptionId: string, userId: string, customerId: string) {
+  console.log('=== HANDLING SUBSCRIPTION CREATED ===');
+  console.log('Subscription data:', { subscriptionId, userId, customerId });
+
+  if (!userId) {
+    console.error('❌ No user_id found in subscription creation!');
+    return;
+  }
+
+  // Get current user data
+  const { data: user, error: userError } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (userError || !user) {
+    console.error('❌ User not found for subscription:', subscriptionId);
+    return;
+  }
+
   const now = new Date();
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1); // 1 month subscription
 
-  await supabaseAdmin
+  // Add 50 credits for new subscription + set subscription status
+  const oldCredits = user.credits_remaining || 0;
+  const newCredits = oldCredits + 50;
+
+  console.log(`💰 Adding 50 subscription credits to user ${userId}`);
+  console.log(`Credits: ${oldCredits} → ${newCredits}`);
+
+  const { error: updateError } = await supabaseAdmin
     .from('profiles')
     .update({
+      credits_remaining: newCredits,
       subscription_tier: 'pro',
       subscription_status: 'active',
       subscription_start_date: now.toISOString(),
@@ -198,7 +226,30 @@ async function handleSubscriptionCreated(subscriptionId: string, userId: string,
     })
     .eq('id', userId);
 
-  await logWebhookEvent('subscription.created', { subscriptionId, userId, customerId });
+  if (updateError) {
+    console.error('❌ Failed to update subscription user:', updateError);
+    throw updateError;
+  }
+
+  console.log('✅ Subscription created and 50 credits added successfully');
+
+  // Log the transaction
+  const { error: txError } = await supabaseAdmin.from('transactions').insert({
+    user_id: userId,
+    product_id: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || 'subscription',
+    amount: 30.00,
+    checkout_id: subscriptionId,
+    transaction_type: 'subscription',
+    created_at: now.toISOString(),
+  });
+
+  if (txError) {
+    console.error('❌ Failed to log subscription transaction:', txError);
+  } else {
+    console.log('✅ Subscription transaction logged successfully');
+  }
+
+  await logWebhookEvent('subscription.created', { subscriptionId, userId, customerId, creditsAdded: 50 });
 }
 
 // Handle subscription updates
@@ -249,8 +300,11 @@ async function handleSubscriptionCancelled(subscriptionId: string) {
   await logWebhookEvent('subscription.cancelled', { subscriptionId });
 }
 
-// Handle successful subscription payment
+// Handle successful subscription payment (monthly renewal)
 async function handleSubscriptionPaymentSucceeded(subscriptionId: string) {
+  console.log('=== HANDLING SUBSCRIPTION PAYMENT SUCCESS ===');
+  console.log('Subscription ID:', subscriptionId);
+
   // Find user by subscription ID and ensure subscription is active
   const { data: user } = await supabaseAdmin
     .from('profiles')
@@ -263,17 +317,45 @@ async function handleSubscriptionPaymentSucceeded(subscriptionId: string) {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 1); // Extend by 1 month
 
-    await supabaseAdmin
+    // Add 50 credits for monthly renewal
+    const oldCredits = user.credits_remaining || 0;
+    const newCredits = oldCredits + 50;
+
+    console.log(`💰 Adding 50 monthly renewal credits to user ${user.id}`);
+    console.log(`Credits: ${oldCredits} → ${newCredits}`);
+
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
+        credits_remaining: newCredits,
         subscription_status: 'active',
         subscription_end_date: endDate.toISOString(),
         updated_at: now.toISOString(),
       })
       .eq('id', user.id);
+
+    if (updateError) {
+      console.error('❌ Failed to update subscription renewal:', updateError);
+    } else {
+      console.log('✅ Subscription renewed and 50 credits added successfully');
+    }
+
+    // Log the renewal transaction
+    const { error: txError } = await supabaseAdmin.from('transactions').insert({
+      user_id: user.id,
+      product_id: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION || 'subscription',
+      amount: 30.00,
+      checkout_id: subscriptionId,
+      transaction_type: 'subscription-renewal',
+      created_at: now.toISOString(),
+    });
+
+    if (txError) {
+      console.error('❌ Failed to log subscription renewal:', txError);
+    }
   }
 
-  await logWebhookEvent('subscription.payment_succeeded', { subscriptionId });
+  await logWebhookEvent('subscription.payment_succeeded', { subscriptionId, creditsAdded: 50 });
 }
 
 // Handle failed subscription payment
