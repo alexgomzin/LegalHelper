@@ -41,14 +41,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (profileError || !profile) {
-      console.error('User profile not found:', userIdString, profileError);
-      return res.status(404).json({ 
-        error: 'User profile not found. Please contact support.',
+      console.log('User profile not found, attempting to create:', user_id);
+      
+      // Try to get user info from auth.users table
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userIdString);
+      
+      if (authError || !authUser.user) {
+        console.log('User not found in auth system:', user_id);
+        return res.status(404).json({ 
+          error: 'User not found in auth system',
+          has_credits: false,
+          subscription_tier: 'free',
+          credits_remaining: 0,
+          can_analyze: false
+        });
+      }
+
+      // Create new profile for the user
+      const newProfile = {
+        id: userIdString,
+        email: authUser.user.email || '',
+        credits_remaining: 0,
+        subscription_tier: 'free',
+        subscription_status: 'inactive',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: createdProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Failed to create user profile:', createError);
+        return res.status(500).json({ 
+          error: 'Failed to create user profile',
+          has_credits: false,
+          subscription_tier: 'free',
+          credits_remaining: 0,
+          can_analyze: false
+        });
+      }
+
+      console.log('✅ Created new user profile:', createdProfile.id);
+      
+      // Use the newly created profile
+      const profile = createdProfile;
+      
+      return res.status(200).json({
         has_credits: false,
         subscription_tier: 'free',
         credits_remaining: 0,
         can_analyze: false,
-        user_id: userIdString
+        profile_created: true
       });
     }
 
