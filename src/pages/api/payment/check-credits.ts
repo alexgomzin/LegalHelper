@@ -19,10 +19,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing user_id parameter' });
     }
 
-    console.log('Checking credits for user_id:', user_id);
+    const userIdString = Array.isArray(user_id) ? user_id[0] : user_id;
+    console.log('Checking credits for user_id:', userIdString);
 
     // If this is the admin user, return unlimited credits immediately
-    if (user_id === ADMIN_USER_ID) {
+    if (userIdString === ADMIN_USER_ID) {
       console.log('Admin user detected, returning unlimited credits');
       return res.status(200).json({
         has_credits: true,
@@ -36,17 +37,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user_id)
+      .eq('id', userIdString)
       .single();
 
     if (profileError || !profile) {
-      console.log('User profile not found:', user_id);
+      console.error('User profile not found:', userIdString, profileError);
       return res.status(404).json({ 
-        error: 'User profile not found',
+        error: 'User profile not found. Please contact support.',
         has_credits: false,
         subscription_tier: 'free',
         credits_remaining: 0,
-        can_analyze: false
+        can_analyze: false,
+        user_id: userIdString
       });
     }
 
