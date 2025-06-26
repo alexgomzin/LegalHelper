@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 // Admin emails that get unlimited credits
 const ADMIN_EMAILS = ['g0mzinaldo@yandex.ru'];
@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get user profile from database
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', user_id)
@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Deduct one credit for pay-per-use users
     const newCreditsRemaining = creditsRemaining - 1;
     
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({ 
         credits_remaining: newCreditsRemaining,
@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Log the credit usage
     try {
-      await supabase.from('document_usages').insert({
+      await supabaseAdmin.from('document_usages').insert({
         user_id,
         document_id,
         credits_used: 1,

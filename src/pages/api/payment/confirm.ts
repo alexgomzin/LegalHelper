@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Verify the user exists
-    const { data: user, error: userError } = await supabase
+    const { data: user, error: userError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', user_id)
@@ -102,13 +102,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       updateData.paddle_subscription_id = checkout_id; // Temporary, will be updated by webhook
     }
 
-    await supabase
+    await supabaseAdmin
       .from('profiles')
       .update(updateData)
       .eq('id', user_id);
 
     // Log the transaction
-    await supabase.from('transactions').insert({
+    await supabaseAdmin.from('transactions').insert({
       user_id,
       product_id,
       amount,
@@ -118,7 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Store the purchase in our database
-    await supabase.from('user_purchases').insert({
+    await supabaseAdmin.from('user_purchases').insert({
       user_id,
       checkout_id,
       product_id,

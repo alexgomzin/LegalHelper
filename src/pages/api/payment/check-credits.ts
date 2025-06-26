@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 // Admin emails that get unlimited credits
 const ADMIN_EMAILS = ['g0mzinaldo@yandex.ru'];
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get user profile from database
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', userIdString)
@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('User profile not found, attempting to create:', user_id);
       
       // Try to get user info from auth.users table
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userIdString);
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(userIdString);
       
       if (authError || !authUser.user) {
         console.log('User not found in auth system:', user_id);
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         updated_at: new Date().toISOString()
       };
 
-      const { data: createdProfile, error: createError } = await supabase
+      const { data: createdProfile, error: createError } = await supabaseAdmin
         .from('profiles')
         .insert(newProfile)
         .select()

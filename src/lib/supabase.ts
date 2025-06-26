@@ -6,14 +6,22 @@ const isMockMode = false
 // Initialize the Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-key'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'mock-service-key'
 
 if (!isMockMode && (!supabaseUrl || !supabaseAnonKey)) {
   console.warn('Supabase URL or Anon Key is missing. Authentication will not work properly.')
 }
 
-// Create the Supabase client - this will still be created even in mock mode
-// but the AuthContext will use mock implementations
+// Create the client-side Supabase client (for browser usage)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Create the server-side Supabase client (for API routes with service role)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 // User type definition based on Supabase auth
 export type User = {
