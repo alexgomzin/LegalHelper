@@ -191,15 +191,20 @@ export default function Checkout() {
 
   const handleSuccessfulPurchase = async (data: any) => {
     try {
+      console.log('=== HANDLING SUCCESSFUL PURCHASE ===');
+      console.log('Purchase data received:', data);
+      console.log('Current priceId:', priceId);
+      console.log('Current user:', user?.id);
+      
       const response = await fetch('/api/payment/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          transaction_id: data.data?.transaction_id,
+          checkout_id: data.data?.transaction_id || data.checkout?.id || `checkout-${Date.now()}`,
           user_id: user?.id,
-          email: email || user?.email,
+          product_id: priceId, // Use the current priceId
         }),
       });
 

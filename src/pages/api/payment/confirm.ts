@@ -29,7 +29,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let amount = 0;
     let isSubscription = false;
 
-    if (product_id === process.env.NEXT_PUBLIC_PADDLE_5_PACK) {
+    console.log('Processing product_id:', product_id);
+    console.log('Environment variables:', {
+      PAY_PER_DOCUMENT: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT,
+      PACK_5: process.env.NEXT_PUBLIC_PADDLE_5_PACK,
+      PACK_15: process.env.NEXT_PUBLIC_PADDLE_15_PACK,
+      PACK_30: process.env.NEXT_PUBLIC_PADDLE_30_PACK,
+      SUBSCRIPTION: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+    });
+
+    if (product_id === process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT) {
+      creditsToAdd = 1;
+      amount = 1.50;
+    } else if (product_id === process.env.NEXT_PUBLIC_PADDLE_5_PACK) {
       creditsToAdd = 5;
       amount = 5.50;
     } else if (product_id === process.env.NEXT_PUBLIC_PADDLE_15_PACK) {
@@ -43,7 +55,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       amount = 30.00;
       isSubscription = true;
     } else {
-      return res.status(400).json({ error: 'Invalid product ID' });
+      console.error('Unrecognized product_id:', product_id);
+      return res.status(400).json({ 
+        error: 'Invalid product ID', 
+        received: product_id,
+        expected_options: {
+          pay_per_document: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT,
+          pack_5: process.env.NEXT_PUBLIC_PADDLE_5_PACK,
+          pack_15: process.env.NEXT_PUBLIC_PADDLE_15_PACK,
+          pack_30: process.env.NEXT_PUBLIC_PADDLE_30_PACK,
+          subscription: process.env.NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+        }
+      });
     }
 
     // Update user's credits
