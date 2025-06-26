@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import crypto from 'crypto';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -85,7 +85,7 @@ async function handleTransactionCompleted(transactionData: any) {
   console.log('✅ Found user_id:', userId);
 
   // Get user details
-  const { data: user, error: userError } = await supabase
+  const { data: user, error: userError } = await supabaseAdmin
     .from('profiles')
     .select('*')
     .eq('id', userId)
@@ -124,7 +124,7 @@ async function handleTransactionCompleted(transactionData: any) {
     const newCredits = oldCredits + creditsToAdd;
     
     // Update user credits
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({
         credits_remaining: newCredits,
@@ -140,7 +140,7 @@ async function handleTransactionCompleted(transactionData: any) {
     console.log(`✅ Credits updated: ${oldCredits} → ${newCredits}`);
 
     // Log the transaction
-    const { error: txError } = await supabase.from('transactions').insert({
+    const { error: txError } = await supabaseAdmin.from('transactions').insert({
       user_id: userId,
       product_id: items[0]?.price?.id || 'unknown',
       amount: totalAmount,
@@ -156,7 +156,7 @@ async function handleTransactionCompleted(transactionData: any) {
     }
 
     // Store the purchase record
-    const { error: purchaseError } = await supabase.from('user_purchases').insert({
+    const { error: purchaseError } = await supabaseAdmin.from('user_purchases').insert({
       user_id: userId,
       checkout_id: transactionId,
       product_id: items[0]?.price?.id || 'unknown',
@@ -185,7 +185,7 @@ async function handleSubscriptionCreated(subscriptionId: string, userId: string,
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1); // 1 month subscription
 
-  await supabase
+  await supabaseAdmin
     .from('profiles')
     .update({
       subscription_tier: 'pro',
@@ -198,145 +198,137 @@ async function handleSubscriptionCreated(subscriptionId: string, userId: string,
     })
     .eq('id', userId);
 
-  // Log the event
-  await logWebhookEvent('subscription_created', { subscriptionId, userId, customerId });
+  await logWebhookEvent('subscription.created', { subscriptionId, userId, customerId });
 }
 
-// Helper function to handle subscription updates
+// Handle subscription updates
 async function handleSubscriptionUpdated(subscriptionId: string, status: string) {
-  const { data: profiles } = await supabase
+  // Find user by subscription ID
+  const { data: user } = await supabaseAdmin
     .from('profiles')
-    .select('id')
-    .eq('paddle_subscription_id', subscriptionId);
+    .select('*')
+    .eq('paddle_subscription_id', subscriptionId)
+    .single();
 
-  if (!profiles || profiles.length === 0) {
-    console.log(`No user found with subscription ID: ${subscriptionId}`);
-    return;
+  if (user) {
+    const mappedStatus = mapPaddleStatusToInternal(status);
+    
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_status: mappedStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
   }
 
-  const userId = profiles[0].id;
-
-  await supabase
-    .from('profiles')
-    .update({
-      subscription_status: mapPaddleStatusToInternal(status),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  // Log the event
-  await logWebhookEvent('subscription_updated', { subscriptionId, status, userId });
+  await logWebhookEvent('subscription.updated', { subscriptionId, status });
 }
 
-// Helper function to handle subscription cancellations
+// Handle subscription cancellation
 async function handleSubscriptionCancelled(subscriptionId: string) {
-  const { data: profiles } = await supabase
+  // Find user by subscription ID
+  const { data: user } = await supabaseAdmin
     .from('profiles')
-    .select('id')
-    .eq('paddle_subscription_id', subscriptionId);
+    .select('*')
+    .eq('paddle_subscription_id', subscriptionId)
+    .single();
 
-  if (!profiles || profiles.length === 0) {
-    console.log(`No user found with subscription ID: ${subscriptionId}`);
-    return;
+  if (user) {
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_tier: 'free',
+        subscription_status: 'inactive',
+        subscription_end_date: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
   }
 
-  const userId = profiles[0].id;
-
-  await supabase
-    .from('profiles')
-    .update({
-      subscription_status: 'inactive',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  // Log the event
-  await logWebhookEvent('subscription_cancelled', { subscriptionId, userId });
+  await logWebhookEvent('subscription.cancelled', { subscriptionId });
 }
 
-// Helper function to handle successful subscription payments
+// Handle successful subscription payment
 async function handleSubscriptionPaymentSucceeded(subscriptionId: string) {
-  const { data: profiles } = await supabase
+  // Find user by subscription ID and ensure subscription is active
+  const { data: user } = await supabaseAdmin
     .from('profiles')
-    .select('id, subscription_end_date')
-    .eq('paddle_subscription_id', subscriptionId);
+    .select('*')
+    .eq('paddle_subscription_id', subscriptionId)
+    .single();
 
-  if (!profiles || profiles.length === 0) {
-    console.log(`No user found with subscription ID: ${subscriptionId}`);
-    return;
+  if (user) {
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1); // Extend by 1 month
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_status: 'active',
+        subscription_end_date: endDate.toISOString(),
+        updated_at: now.toISOString(),
+      })
+      .eq('id', user.id);
   }
 
-  const userId = profiles[0].id;
-  const currentEndDate = new Date(profiles[0].subscription_end_date);
-  
-  // Extend subscription by one month
-  const newEndDate = new Date(currentEndDate);
-  newEndDate.setMonth(newEndDate.getMonth() + 1);
-
-  await supabase
-    .from('profiles')
-    .update({
-      subscription_status: 'active',
-      subscription_end_date: newEndDate.toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  // Log the event
-  await logWebhookEvent('subscription_payment_succeeded', { subscriptionId, userId });
+  await logWebhookEvent('subscription.payment_succeeded', { subscriptionId });
 }
 
-// Helper function to handle failed subscription payments
+// Handle failed subscription payment
 async function handleSubscriptionPaymentFailed(subscriptionId: string) {
-  const { data: profiles } = await supabase
+  // Find user by subscription ID
+  const { data: user } = await supabaseAdmin
     .from('profiles')
-    .select('id')
-    .eq('paddle_subscription_id', subscriptionId);
+    .select('*')
+    .eq('paddle_subscription_id', subscriptionId)
+    .single();
 
-  if (!profiles || profiles.length === 0) {
-    console.log(`No user found with subscription ID: ${subscriptionId}`);
-    return;
+  if (user) {
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        subscription_status: 'inactive',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
   }
 
-  const userId = profiles[0].id;
-
-  // Don't change the subscription status yet, but log the failure
-  // Paddle will typically retry payments
-
-  // Log the event
-  await logWebhookEvent('subscription_payment_failed', { subscriptionId, userId });
+  await logWebhookEvent('subscription.payment_failed', { subscriptionId });
 }
 
 // Helper function to log webhook events
 async function logWebhookEvent(eventType: string, data: any) {
-  await supabase.from('webhook_logs').insert({
-    event_type: eventType,
-    event_data: data,
-    created_at: new Date().toISOString(),
-  });
+  try {
+    await supabaseAdmin.from('webhook_logs').insert({
+      event_type: eventType,
+      payload: data,
+      status: 'processed',
+    });
+  } catch (error) {
+    console.error('Failed to log webhook event:', error);
+  }
 }
 
-// Helper function to map Paddle status to our internal status
+// Helper function to map Paddle status to internal status
 function mapPaddleStatusToInternal(paddleStatus: string): 'active' | 'inactive' | 'trial' {
   switch (paddleStatus.toLowerCase()) {
     case 'active':
-    case 'trialing':
       return 'active';
-    case 'past_due':
-      return 'active'; // Still active but past due
+    case 'trialing':
+      return 'trial';
     case 'paused':
-    case 'deleted':
+    case 'past_due':
     case 'canceled':
-      return 'inactive';
     default:
       return 'inactive';
   }
 }
 
-// Helper function to verify Paddle webhook (simplified example)
-// In production, you would implement proper signature verification
+// Helper function for webhook signature verification (placeholder)
 function verifyPaddleWebhook(payload: any): boolean {
-  // This is a placeholder for actual verification logic
-  // https://developer.paddle.com/webhook-reference/verifying-webhooks
-  return true;
+  // In production, implement proper signature verification
+  // using Paddle's public key and the webhook signature
+  return true; // For now, always return true
 } 
