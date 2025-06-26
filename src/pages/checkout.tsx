@@ -190,24 +190,33 @@ export default function Checkout() {
   }, []);
 
   const handleSuccessfulPurchase = async (data: any) => {
-    console.log('=== PAYMENT SUCCESS CALLBACK ===');
-    console.log('Success data received:', data);
-    
     try {
-      // Payment completed successfully - redirect to success page
-      // Credits will be added by webhook automatically
-      console.log('✅ Payment completed! Redirecting to dashboard...');
-      console.log('Note: Credits will be added automatically by webhook within a few moments');
-      
-      if (successUrl) {
-        window.location.href = successUrl;
+      const response = await fetch('/api/payment/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transaction_id: data.data?.transaction_id,
+          user_id: user?.id,
+          email: email || user?.email,
+        }),
+      });
+
+      if (response.ok) {
+        // Redirect to success page
+        if (successUrl) {
+          window.location.href = successUrl;
+        } else {
+          router.push('/dashboard?purchase=success');
+        }
       } else {
-        router.push('/dashboard?purchase=success&message=Credits will be added within a few moments');
+        console.error('Failed to process purchase');
+        setCheckoutError('Purchase completed but there was an issue updating your account. Please contact support.');
       }
     } catch (error) {
-      console.error('Error during redirect:', error);
-      // Even if redirect fails, still try to redirect
-      router.push('/dashboard?purchase=success');
+      console.error('Error processing purchase:', error);
+      setCheckoutError('Purchase completed but there was an issue updating your account. Please contact support.');
     } finally {
       setIsProcessing(false);
     }
@@ -250,7 +259,7 @@ export default function Checkout() {
         console.log('Using Paddle.js for checkout...');
         
         try {
-          const checkoutData: any = {
+          const checkoutData = {
             items: [
               {
                 priceId: priceId,
@@ -260,29 +269,23 @@ export default function Checkout() {
             customer: {
               email: customerEmail
             },
+            customData: {
+              user_id: user?.id
+            },
             settings: {
               displayMode: "overlay",
               theme: "light",
-              locale: "en",
-              successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
-              closeUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
+              locale: "en"
             }
           };
           
-          // Add custom data properly for Paddle.js
-          if (user?.id) {
-            checkoutData.customData = {
-              user_id: user.id
-            };
-          }
-          
           console.log('Opening Paddle checkout with data:', checkoutData);
-          console.log('User ID being sent:', user?.id);
+          console.log('Paddle object methods:', Object.keys(window.Paddle));
+          console.log('Paddle Checkout methods:', window.Paddle.Checkout ? Object.keys(window.Paddle.Checkout) : 'No Checkout object');
           
           // Use Paddle.js checkout
-          window.Paddle.Checkout.open(checkoutData);
-          
-          console.log('Paddle checkout opened successfully');
+          const checkoutPromise = window.Paddle.Checkout.open(checkoutData);
+          console.log('Paddle checkout promise:', checkoutPromise);
           
           return; // Exit here if Paddle.js works
           
