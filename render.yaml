@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: legal-helper
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/test-deployment
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        fromDatabase:
+          name: supabase-url
+          property: connectionString
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        fromDatabase:
+          name: supabase-anon-key
+          property: connectionString
+      - key: OPENAI_API_KEY
+        fromDatabase:
+          name: openai-api-key
+          property: connectionString
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        fromDatabase:
+          name: supabase-service-key
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_VENDOR_ID
+        fromDatabase:
+          name: paddle-vendor-id
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_ENVIRONMENT
+        value: sandbox
+      - key: NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT
+        fromDatabase:
+          name: paddle-pay-per-doc
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_5_PACK
+        fromDatabase:
+          name: paddle-5-pack
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_15_PACK
+        fromDatabase:
+          name: paddle-15-pack
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_30_PACK
+        fromDatabase:
+          name: paddle-30-pack
+          property: connectionString
+      - key: NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+        fromDatabase:
+          name: paddle-subscription
+          property: connectionString 
