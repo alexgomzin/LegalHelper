@@ -7,7 +7,6 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { formatDate } from '@/utils/formatDate'
 import { useTranslation } from '@/contexts/LanguageContext'
-import { getAllUserDocuments } from '@/utils/supabaseDocumentUtils'
 
 // Define type for document records
 interface DocumentRecord {
@@ -25,72 +24,25 @@ export default function Dashboard() {
   
   // State for recent documents with proper typing
   const [recentDocuments, setRecentDocuments] = useState<DocumentRecord[]>([])
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false)
 
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isLoading && !isAuthenticated) {
       router.push('/login')
-      return
     }
     
-    // Load recent documents from Supabase (with localStorage fallback)
-    if (user) {
-      loadUserDocuments(user.id)
-    }
-  }, [isAuthenticated, isLoading, router, user])
-
-  // Load documents from Supabase with localStorage as fallback
-  const loadUserDocuments = async (userId: string) => {
-    setIsLoadingDocuments(true)
+    // Load recent documents from localStorage
     try {
-      const userDocuments = await getAllUserDocuments(userId)
-      
-      if (userDocuments && userDocuments.length > 0) {
-        // Convert Supabase format to dashboard format and only show 3 most recent
-        const formattedDocs = userDocuments.map((doc: any) => ({
-          id: doc.document_id || doc.id,
-          name: doc.document_name || doc.name,
-          date: doc.created_at || doc.date,
-          status: doc.status
-        })).slice(0, 3)
-        
-        setRecentDocuments(formattedDocs)
-      } else {
-        // If no documents found in Supabase, try localStorage as fallback
-        try {
-          const storedDocs = localStorage.getItem('analyzedDocuments')
-          if (storedDocs) {
-            const parsedDocs = JSON.parse(storedDocs)
-            setRecentDocuments(parsedDocs.slice(0, 3))
-          } else {
-            setRecentDocuments([])
-          }
-        } catch (localError) {
-          console.error('Error loading documents from localStorage:', localError)
-          setRecentDocuments([])
-        }
+      const storedDocs = localStorage.getItem('analyzedDocuments')
+      if (storedDocs) {
+        // Only display the 3 most recent documents
+        const parsedDocs = JSON.parse(storedDocs)
+        setRecentDocuments(parsedDocs.slice(0, 3))
       }
     } catch (error) {
       console.error('Error loading documents:', error)
-      
-      // Try to get documents from localStorage as fallback
-      try {
-        const storedDocs = localStorage.getItem('analyzedDocuments')
-        if (storedDocs) {
-          const parsedDocs = JSON.parse(storedDocs)
-          setRecentDocuments(parsedDocs.slice(0, 3))
-        } else {
-          setRecentDocuments([])
-        }
-      } catch (localError) {
-        console.error('Error loading documents from localStorage:', localError)
-        setRecentDocuments([])
-      }
-    } finally {
-      setIsLoadingDocuments(false)
     }
-  }
+  }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
     return (
@@ -190,14 +142,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <ul className="divide-y divide-gray-200">
-                  {isLoadingDocuments ? (
-                    <li className="px-4 py-4 sm:px-6 text-center text-gray-500">
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mr-2"></div>
-                        Loading documents...
-                      </div>
-                    </li>
-                  ) : recentDocuments.length > 0 ? (
+                  {recentDocuments.length > 0 ? (
                     recentDocuments.map((doc) => (
                       <li key={doc.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                         <div className="flex items-center justify-between">
