@@ -266,9 +266,15 @@ For each identified risk:
 
 Be thorough - identify ALL significant risks in the document, not just a limited selection. If there are many issues, include them all.
 
-IMPORTANT: First determine the language of the document, looking at the overall structure, terminology, and content.
-If the text contains terms like "LEASE AGREEMENT", "LANDLORD", "TENANT", "WHEREAS", it is very likely an English document, even if there are a few foreign words.
-For English documents, ALL explanations and recommendations MUST be in English.
+CRITICAL LANGUAGE INSTRUCTION: 
+1. First, automatically detect the primary language of the document by analyzing the text content
+2. Provide ALL explanations and recommendations in the SAME language as the document
+3. If the document is in Russian, respond in Russian
+4. If the document is in German, respond in German
+5. If the document is in Spanish, respond in Spanish
+6. If the document is in French, respond in French
+7. If the document is in English, respond in English
+8. For mixed-language documents, use the predominant language
 
 EXTREMELY IMPORTANT: Your response MUST be valid JSON only, with no markdown formatting, code blocks, or explanation text. Do not wrap the JSON in \`\`\` or any other formatting. Just return the raw JSON object.
 
@@ -279,25 +285,25 @@ You must respond ONLY with a valid JSON object using the following structure:
       "id": 1,
       "text": "exact text from document containing the risk",
       "riskLevel": "high|medium|low",
-      "explanation": "clear explanation of the risk",
-      "recommendation": "specific suggestion to address the risk"
+      "explanation": "clear explanation of the risk in the same language as the document",
+      "recommendation": "specific suggestion to address the risk in the same language as the document"
     },
     ...
     {
       "id": n,
       "text": "exact text from document containing the risk",
       "riskLevel": "high|medium|low",
-      "explanation": "clear explanation of the risk",
-      "recommendation": "specific suggestion to address the risk"
+      "explanation": "clear explanation of the risk in the same language as the document",
+      "recommendation": "specific suggestion to address the risk in the same language as the document"
     }
   ],
-  "summary": "overall assessment of the document's risks and general recommendations",
-  "documentLanguage": "detected language code (en, ru, de, etc.)"
+  "summary": "overall assessment of the document's risks and general recommendations in the same language as the document",
+  "documentLanguage": "detected language code (en, ru, de, es, fr, etc.)"
 }`
               },
               {
                 role: "user",
-                content: `Please analyze this legal document thoroughly and identify ALL potential risks and issues. This appears to be a standard English legal document, so please ensure all explanations and recommendations are in English:\n\n${textToAnalyze}`
+                content: `Please analyze this legal document thoroughly and identify ALL potential risks and issues. Automatically detect the language of the document and provide all explanations and recommendations in that same language:\n\n${textToAnalyze}`
               }
             ],
             temperature: 0.1  // Lower temperature for more comprehensive analysis
@@ -399,35 +405,73 @@ You must respond ONLY with a valid JSON object using the following structure:
   }
 }
 
+// Simple language detection function
+function detectLanguage(text: string): string {
+  if (!text || text.length < 10) return 'en';
+  const textLower = text.toLowerCase();
+  
+  if (/[а-яё]/i.test(text)) return 'ru';
+  if (/[äöüß]/i.test(text) || /\b(der|die|das|und|ist|sind|hat|haben|wird|werden)\b/i.test(textLower)) return 'de';
+  if (/[ñáéíóúü]/i.test(text) || /\b(el|la|los|las|y|es|son|tiene|tienen)\b/i.test(textLower)) return 'es';
+  if (/[àâäéèêëïîôöùûüÿç]/i.test(text) || /\b(le|la|les|et|est|sont|a|ont)\b/i.test(textLower)) return 'fr';
+  
+  return 'en';
+}
+
 // Function to get mock analysis data for fallback
 function getMockAnalysis(text: string = "") {
+  const detectedLang = detectLanguage(text);
+  
+  const translations: { [key: string]: any } = {
+    'en': {
+      risks: [
+        {
+          id: 1,
+          text: "The Vendor shall deliver the goods at a reasonable time after receiving the purchase order.",
+          riskLevel: "high",
+          explanation: "Ambiguous timeline could lead to disputes over delivery expectations.",
+          recommendation: "Specify a concrete timeframe, e.g., 'within 14 business days' instead of 'reasonable time'."
+        },
+        {
+          id: 2,
+          text: "The Client may terminate this agreement for any reason with 30 days notice.",
+          riskLevel: "medium",
+          explanation: "One-sided termination clause favors the Client and creates uncertainty for the other party.",
+          recommendation: "Consider adding mutual termination rights or specific conditions under which termination is allowed."
+        }
+      ],
+      summary: "The document contains several ambiguous clauses that could lead to potential disputes. The most significant risks involve unclear delivery timelines and one-sided termination rights.",
+      fullText: text || "This is sample text from the document. The Vendor shall deliver the goods at a reasonable time after receiving the purchase order. The Client may terminate this agreement for any reason with 30 days notice."
+    },
+    'ru': {
+      risks: [
+        {
+          id: 1,
+          text: "Поставщик должен доставить товары в разумные сроки после получения заказа на покупку.",
+          riskLevel: "high",
+          explanation: "Неопределенные временные рамки могут привести к спорам относительно ожиданий по доставке.",
+          recommendation: "Укажите конкретные временные рамки, например, 'в течение 14 рабочих дней' вместо 'разумные сроки'."
+        },
+        {
+          id: 2,
+          text: "Клиент может расторгнуть данное соглашение по любой причине с уведомлением за 30 дней.",
+          riskLevel: "medium",
+          explanation: "Односторонняя оговорка о расторжении благоприятствует Клиенту и создает неопределенность для другой стороны.",
+          recommendation: "Рассмотрите добавление взаимных прав на расторжение или конкретных условий, при которых разрешено расторжение."
+        }
+      ],
+      summary: "Документ содержит несколько неопределенных оговорок, которые могут привести к потенциальным спорам. Наиболее значительные риски связаны с неясными сроками доставки и односторонними правами на расторжение.",
+      fullText: text || "Это образец текста из документа. Поставщик должен доставить товары в разумные сроки после получения заказа на покупку. Клиент может расторгнуть данное соглашение по любой причине с уведомлением за 30 дней."
+    }
+  };
+  
+  const lang = translations[detectedLang] || translations['en'];
+  
   return {
-    highlightedText: [
-      {
-        id: 1,
-        text: "The Vendor shall deliver the goods at a reasonable time after receiving the purchase order.",
-        riskLevel: "high",
-        explanation: "Ambiguous timeline could lead to disputes over delivery expectations.",
-        recommendation: "Specify a concrete timeframe, e.g., 'within 14 business days' instead of 'reasonable time'."
-      },
-      {
-        id: 2,
-        text: "The Client may terminate this agreement for any reason with 30 days notice.",
-        riskLevel: "medium",
-        explanation: "One-sided termination clause favors the Client and creates uncertainty for the other party.",
-        recommendation: "Consider adding mutual termination rights or specific conditions under which termination is allowed."
-      },
-      {
-        id: 3,
-        text: "All disputes shall be resolved in accordance with the laws of the State.",
-        riskLevel: "medium",
-        explanation: "The governing law is not specified clearly, which could lead to jurisdictional issues.",
-        recommendation: "Specify the exact state or jurisdiction whose laws will govern the agreement."
-      }
-    ],
-    summary: "The document contains several ambiguous clauses that could lead to potential disputes. The most significant risks involve unclear delivery timelines, one-sided termination rights, and ambiguous jurisdiction specifications.",
-    fullText: text || "This is sample text from the document. The Vendor shall deliver the goods at a reasonable time after receiving the purchase order. The Client may terminate this agreement for any reason with 30 days notice. All disputes shall be resolved in accordance with the laws of the State.",
-    documentLanguage: "en"
+    highlightedText: lang.risks,
+    summary: lang.summary,
+    fullText: lang.fullText,
+    documentLanguage: detectedLang
   };
 }
 

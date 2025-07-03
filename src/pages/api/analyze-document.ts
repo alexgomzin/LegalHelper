@@ -248,9 +248,15 @@ For each identified risk:
 
 Be thorough - identify ALL significant risks in the document, not just a limited selection. If there are many issues, include them all.
 
-IMPORTANT: First determine the language of the document, looking at the overall structure, terminology, and content.
-If the text contains terms like "LEASE AGREEMENT", "LANDLORD", "TENANT", "WHEREAS", it is very likely an English document, even if there are a few foreign words.
-For English documents, ALL explanations and recommendations MUST be in English.
+CRITICAL LANGUAGE INSTRUCTION: 
+1. First, automatically detect the primary language of the document by analyzing the text content
+2. Provide ALL explanations and recommendations in the SAME language as the document
+3. If the document is in Russian, respond in Russian
+4. If the document is in German, respond in German
+5. If the document is in Spanish, respond in Spanish
+6. If the document is in French, respond in French
+7. If the document is in English, respond in English
+8. For mixed-language documents, use the predominant language
 
 EXTREMELY IMPORTANT: Your response MUST be valid JSON only, with no markdown formatting, code blocks, or explanation text. Do not wrap the JSON in \`\`\` or any other formatting. Just return the raw JSON object.
 
@@ -261,25 +267,25 @@ You must respond ONLY with a valid JSON object using the following structure:
       "id": 1,
       "text": "exact text from document containing the risk",
       "riskLevel": "high|medium|low",
-      "explanation": "clear explanation of the risk",
-      "recommendation": "specific suggestion to address the risk"
+      "explanation": "clear explanation of the risk in the same language as the document",
+      "recommendation": "specific suggestion to address the risk in the same language as the document"
     },
     ...
     {
       "id": n,
       "text": "exact text from document containing the risk",
       "riskLevel": "high|medium|low",
-      "explanation": "clear explanation of the risk",
-      "recommendation": "specific suggestion to address the risk"
+      "explanation": "clear explanation of the risk in the same language as the document",
+      "recommendation": "specific suggestion to address the risk in the same language as the document"
     }
   ],
-  "summary": "overall assessment of the document's risks and general recommendations",
-  "documentLanguage": "detected language code (en, ru, de, etc.)"
+  "summary": "overall assessment of the document's risks and general recommendations in the same language as the document",
+  "documentLanguage": "detected language code (en, ru, de, es, fr, etc.)"
 }`
           },
           {
             role: "user",
-            content: `Please analyze this legal document thoroughly and identify ALL potential risks and issues. This appears to be a standard English legal document, so please ensure all explanations and recommendations are in English:\n\n${textToAnalyze}`
+            content: `Please analyze this legal document thoroughly and identify ALL potential risks and issues. Automatically detect the language of the document and provide all explanations and recommendations in that same language:\n\n${textToAnalyze}`
           }
         ],
         temperature: 0.1  // Lower temperature for more comprehensive analysis
@@ -362,48 +368,200 @@ You must respond ONLY with a valid JSON object using the following structure:
   }
 }
 
-// Mock analysis function for testing or when OpenAI is not available
+// Simple language detection function
+function detectLanguage(text: string): string {
+  if (!text || text.length < 10) return 'en'; // Default to English for short texts
+  
+  const textLower = text.toLowerCase();
+  
+  // Russian detection - look for Cyrillic characters and common Russian words
+  if (/[а-яё]/i.test(text)) {
+    return 'ru';
+  }
+  
+  // German detection - look for German-specific words and characters
+  if (/[äöüß]/i.test(text) || 
+      /\b(der|die|das|und|oder|aber|mit|von|zu|bei|nach|über|unter|durch|für|gegen|ohne|um|an|auf|aus|in|ist|sind|war|waren|hat|haben|wird|werden|kann|können|soll|sollen|muss|müssen|darf|dürfen|mag|mögen|will|wollen)\b/i.test(textLower)) {
+    return 'de';
+  }
+  
+  // Spanish detection - look for Spanish-specific words and characters
+  if (/[ñáéíóúü]/i.test(text) || 
+      /\b(el|la|los|las|un|una|y|o|pero|con|de|del|al|para|por|en|es|son|fue|fueron|ha|han|será|serán|puede|pueden|debe|deben|tiene|tienen|hace|hacen|dice|dicen|va|van|viene|vienen)\b/i.test(textLower)) {
+    return 'es';
+  }
+  
+  // French detection - look for French-specific words and characters
+  if (/[àâäéèêëïîôöùûüÿç]/i.test(text) || 
+      /\b(le|la|les|un|une|et|ou|mais|avec|de|du|des|pour|par|dans|sur|sous|est|sont|était|étaient|a|ont|sera|seront|peut|peuvent|doit|doivent|fait|font|dit|disent|va|vont|vient|viennent)\b/i.test(textLower)) {
+    return 'fr';
+  }
+  
+  // Italian detection - look for Italian-specific words and characters
+  if (/\b(il|la|lo|gli|le|un|una|e|o|ma|con|di|del|della|dello|degli|delle|per|da|in|su|tra|fra|è|sono|era|erano|ha|hanno|sarà|saranno|può|possono|deve|devono|fa|fanno|dice|dicono|va|vanno|viene|vengono)\b/i.test(textLower)) {
+    return 'it';
+  }
+  
+  // Portuguese detection - look for Portuguese-specific words and characters
+  if (/[ãõç]/i.test(text) || 
+      /\b(o|a|os|as|um|uma|e|ou|mas|com|de|do|da|dos|das|para|por|em|no|na|nos|nas|é|são|foi|foram|tem|têm|será|serão|pode|podem|deve|devem|faz|fazem|diz|dizem|vai|vão|vem|vêm)\b/i.test(textLower)) {
+    return 'pt';
+  }
+  
+  // Dutch detection - look for Dutch-specific words
+  if (/\b(de|het|een|en|of|maar|met|van|voor|door|in|op|aan|bij|uit|over|onder|tussen|is|zijn|was|waren|heeft|hebben|zal|zullen|kan|kunnen|moet|moeten|mag|mogen|wil|willen|doet|doen|zegt|zeggen|gaat|gaan|komt|komen)\b/i.test(textLower)) {
+    return 'nl';
+  }
+  
+  // Default to English if no other language is detected
+  return 'en';
+}
+
+// Get mock analysis with language-appropriate responses
 function getMockAnalysis(text: string = "") {
+  const detectedLang = detectLanguage(text);
+  
+  // Define translations for different languages
+  const translations: { [key: string]: any } = {
+    'en': {
+      risks: [
+        {
+          id: 1,
+          text: "The Parties may terminate this Agreement with 30 days' notice.",
+          riskLevel: "high",
+          explanation: "This termination clause is too vague and may allow either party to terminate without cause, which creates uncertainty for your business operations.",
+          recommendation: "Specify clear conditions under which the Agreement may be terminated. Add specific cause requirements and consider different notice periods for different types of termination."
+        },
+        {
+          id: 2,
+          text: "Client will indemnify and hold Company harmless from any claims, damages, liabilities, costs, or expenses.",
+          riskLevel: "high",
+          explanation: "This indemnification clause is one-sided, placing all liability on the Client without any reciprocal protection.",
+          recommendation: "Negotiate a mutual indemnification clause that protects both parties, or limit the scope of indemnification to specific scenarios directly caused by Client's actions."
+        },
+        {
+          id: 3,
+          text: "Payment terms are Net-60 from invoice date.",
+          riskLevel: "medium",
+          explanation: "A 60-day payment term is longer than industry standard and could impact your cash flow.",
+          recommendation: "Negotiate shorter payment terms (Net-30 is standard in most industries) or include incentives for early payment and penalties for late payment."
+        }
+      ],
+      summary: "This document contains several high-risk provisions that should be addressed before signing. The main concerns are the one-sided termination and indemnification clauses, which create significant liability exposure. The payment terms are also longer than industry standard. Consider negotiating these terms to create a more balanced agreement that protects your interests."
+    },
+    'ru': {
+      risks: [
+        {
+          id: 1,
+          text: "Стороны могут расторгнуть данное Соглашение с уведомлением за 30 дней.",
+          riskLevel: "high",
+          explanation: "Данная оговорка о расторжении слишком расплывчата и может позволить любой стороне расторгнуть договор без причины, что создает неопределенность для вашей деловой деятельности.",
+          recommendation: "Укажите четкие условия, при которых Соглашение может быть расторгнуто. Добавьте конкретные требования к причинам и рассмотрите различные сроки уведомления для разных типов расторжения."
+        },
+        {
+          id: 2,
+          text: "Клиент обязуется возместить ущерб и освободить Компанию от любых претензий, ущерба, обязательств, расходов или затрат.",
+          riskLevel: "high",
+          explanation: "Данная оговорка о возмещении ущерба является односторонней, возлагая всю ответственность на Клиента без какой-либо взаимной защиты.",
+          recommendation: "Договоритесь о взаимной оговорке возмещения ущерба, которая защищает обе стороны, или ограничьте область возмещения ущерба конкретными сценариями, непосредственно вызванными действиями Клиента."
+        },
+        {
+          id: 3,
+          text: "Условия оплаты - нетто-60 дней с даты выставления счета.",
+          riskLevel: "medium",
+          explanation: "60-дневный срок оплаты превышает отраслевой стандарт и может повлиять на ваш денежный поток.",
+          recommendation: "Договоритесь о более коротких сроках оплаты (нетто-30 является стандартом в большинстве отраслей) или включите стимулы для досрочной оплаты и штрафы за просрочку платежа."
+        }
+      ],
+      summary: "Данный документ содержит несколько положений высокого риска, которые следует рассмотреть перед подписанием. Основные проблемы - односторонние оговорки о расторжении и возмещении ущерба, которые создают значительные риски ответственности. Условия оплаты также превышают отраслевой стандарт. Рассмотрите возможность пересмотра этих условий для создания более сбалансированного соглашения, защищающего ваши интересы."
+    },
+    'de': {
+      risks: [
+        {
+          id: 1,
+          text: "Die Vertragsparteien können diese Vereinbarung mit einer Frist von 30 Tagen kündigen.",
+          riskLevel: "high",
+          explanation: "Diese Kündigungsklausel ist zu vage und könnte es jeder Partei ermöglichen, ohne Grund zu kündigen, was Unsicherheit für Ihre Geschäftstätigkeit schafft.",
+          recommendation: "Spezifizieren Sie klare Bedingungen, unter denen die Vereinbarung gekündigt werden kann. Fügen Sie spezifische Grund-Anforderungen hinzu und berücksichtigen Sie unterschiedliche Kündigungsfristen für verschiedene Arten der Kündigung."
+        },
+        {
+          id: 2,
+          text: "Der Kunde wird das Unternehmen von allen Ansprüchen, Schäden, Verbindlichkeiten, Kosten oder Ausgaben freistellen und schadlos halten.",
+          riskLevel: "high",
+          explanation: "Diese Freistellungsklausel ist einseitig und legt die gesamte Haftung auf den Kunden ohne gegenseitigen Schutz.",
+          recommendation: "Verhandeln Sie eine gegenseitige Freistellungsklausel, die beide Parteien schützt, oder begrenzen Sie den Umfang der Freistellung auf spezifische Szenarien, die direkt durch die Handlungen des Kunden verursacht werden."
+        },
+        {
+          id: 3,
+          text: "Zahlungsbedingungen sind Netto-60 ab Rechnungsdatum.",
+          riskLevel: "medium",
+          explanation: "Eine 60-Tage-Zahlungsfrist ist länger als der Branchenstandard und könnte Ihren Cashflow beeinträchtigen.",
+          recommendation: "Verhandeln Sie kürzere Zahlungsfristen (Netto-30 ist Standard in den meisten Branchen) oder schließen Sie Anreize für frühzeitige Zahlung und Strafen für verspätete Zahlung ein."
+        }
+      ],
+      summary: "Dieses Dokument enthält mehrere risikoreiche Bestimmungen, die vor der Unterzeichnung behandelt werden sollten. Die Hauptprobleme sind die einseitigen Kündigungs- und Freistellungsklauseln, die erhebliche Haftungsrisiken schaffen. Die Zahlungsbedingungen sind auch länger als der Branchenstandard. Erwägen Sie, diese Bedingungen zu verhandeln, um eine ausgewogenere Vereinbarung zu schaffen, die Ihre Interessen schützt."
+    },
+    'es': {
+      risks: [
+        {
+          id: 1,
+          text: "Las Partes pueden terminar este Acuerdo con aviso de 30 días.",
+          riskLevel: "high",
+          explanation: "Esta cláusula de terminación es demasiado vaga y puede permitir que cualquier parte termine sin causa, lo que crea incertidumbre para sus operaciones comerciales.",
+          recommendation: "Especifique condiciones claras bajo las cuales el Acuerdo puede ser terminado. Agregue requisitos específicos de causa y considere diferentes períodos de aviso para diferentes tipos de terminación."
+        },
+        {
+          id: 2,
+          text: "El Cliente indemnizará y mantendrá indemne a la Compañía de cualquier reclamo, daño, responsabilidad, costo o gasto.",
+          riskLevel: "high",
+          explanation: "Esta cláusula de indemnización es unilateral, colocando toda la responsabilidad en el Cliente sin protección recíproca.",
+          recommendation: "Negocie una cláusula de indemnización mutua que proteja a ambas partes, o limite el alcance de la indemnización a escenarios específicos directamente causados por las acciones del Cliente."
+        },
+        {
+          id: 3,
+          text: "Los términos de pago son Neto-60 desde la fecha de factura.",
+          riskLevel: "medium",
+          explanation: "Un término de pago de 60 días es más largo que el estándar de la industria y podría impactar su flujo de efectivo.",
+          recommendation: "Negocie términos de pago más cortos (Neto-30 es estándar en la mayoría de las industrias) o incluya incentivos para pago temprano y penalidades por pago tardío."
+        }
+      ],
+      summary: "Este documento contiene varias disposiciones de alto riesgo que deben ser abordadas antes de firmar. Las principales preocupaciones son las cláusulas unilaterales de terminación e indemnización, que crean exposición significativa de responsabilidad. Los términos de pago también son más largos que el estándar de la industria. Considere negociar estos términos para crear un acuerdo más equilibrado que proteja sus intereses."
+    },
+    'fr': {
+      risks: [
+        {
+          id: 1,
+          text: "Les Parties peuvent résilier cet Accord avec un préavis de 30 jours.",
+          riskLevel: "high",
+          explanation: "Cette clause de résiliation est trop vague et peut permettre à chaque partie de résilier sans cause, ce qui crée de l'incertitude pour vos opérations commerciales.",
+          recommendation: "Spécifiez des conditions claires sous lesquelles l'Accord peut être résilié. Ajoutez des exigences de cause spécifiques et considérez différentes périodes de préavis pour différents types de résiliation."
+        },
+        {
+          id: 2,
+          text: "Le Client indemnisera et dégagera la Compagnie de toute réclamation, dommage, responsabilité, coût ou dépense.",
+          riskLevel: "high",
+          explanation: "Cette clause d'indemnisation est unilatérale, plaçant toute la responsabilité sur le Client sans protection réciproque.",
+          recommendation: "Négociez une clause d'indemnisation mutuelle qui protège les deux parties, ou limitez la portée de l'indemnisation à des scénarios spécifiques directement causés par les actions du Client."
+        },
+        {
+          id: 3,
+          text: "Les conditions de paiement sont Net-60 à partir de la date de facture.",
+          riskLevel: "medium",
+          explanation: "Un délai de paiement de 60 jours est plus long que la norme de l'industrie et pourrait impacter votre flux de trésorerie.",
+          recommendation: "Négociez des délais de paiement plus courts (Net-30 est standard dans la plupart des industries) ou incluez des incitations pour paiement anticipé et des pénalités pour paiement tardif."
+        }
+      ],
+      summary: "Ce document contient plusieurs dispositions à haut risque qui devraient être abordées avant la signature. Les principales préoccupations sont les clauses unilatérales de résiliation et d'indemnisation, qui créent une exposition significative de responsabilité. Les conditions de paiement sont également plus longues que la norme de l'industrie. Considérez négocier ces termes pour créer un accord plus équilibré qui protège vos intérêts."
+    }
+  };
+  
+  // Get the appropriate translation or default to English
+  const lang = translations[detectedLang] || translations['en'];
+  
   return {
-    highlightedText: [
-      {
-        id: 1,
-        text: "The Parties may terminate this Agreement with 30 days' notice.",
-        riskLevel: "high",
-        explanation: "This termination clause is too vague and may allow either party to terminate without cause, which creates uncertainty for your business operations.",
-        recommendation: "Specify clear conditions under which the Agreement may be terminated. Add specific cause requirements and consider different notice periods for different types of termination."
-      },
-      {
-        id: 2,
-        text: "Client will indemnify and hold Company harmless from any claims, damages, liabilities, costs, or expenses.",
-        riskLevel: "high",
-        explanation: "This indemnification clause is one-sided, placing all liability on the Client without any reciprocal protection.",
-        recommendation: "Negotiate a mutual indemnification clause that protects both parties, or limit the scope of indemnification to specific scenarios directly caused by Client's actions."
-      },
-      {
-        id: 3,
-        text: "Payment terms are Net-60 from invoice date.",
-        riskLevel: "medium",
-        explanation: "A 60-day payment term is longer than industry standard and could impact your cash flow.",
-        recommendation: "Negotiate shorter payment terms (Net-30 is standard in most industries) or include incentives for early payment and penalties for late payment."
-      },
-      {
-        id: 4,
-        text: "Company shall use reasonable efforts to provide the Services.",
-        riskLevel: "medium",
-        explanation: "'Reasonable efforts' is ambiguous and provides little concrete obligation for the service provider.",
-        recommendation: "Define specific service levels, performance metrics, or deliverables rather than relying on subjective standards like 'reasonable efforts'."
-      },
-      {
-        id: 5,
-        text: "All intellectual property created during the project will be owned by Client.",
-        riskLevel: "low",
-        explanation: "This clause doesn't account for pre-existing IP that Company may incorporate into deliverables.",
-        recommendation: "Modify to clarify that only newly created IP transfers to Client, while Company retains rights to pre-existing IP, with a license granted to Client to use it."
-      }
-    ],
-    summary: "This document contains several high-risk provisions that should be addressed before signing. The main concerns are the one-sided termination and indemnification clauses, which create significant liability exposure. The payment terms are also longer than industry standard. Consider negotiating these terms to create a more balanced agreement that protects your interests.",
-    documentLanguage: "en",
+    highlightedText: lang.risks,
+    summary: lang.summary,
+    documentLanguage: detectedLang,
     fullText: text
   };
 } 
