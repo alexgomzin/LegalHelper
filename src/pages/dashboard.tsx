@@ -7,6 +7,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { formatDate } from '@/utils/formatDate'
 import { useTranslation } from '@/contexts/LanguageContext'
+import { getAllUserDocuments } from '@/utils/supabaseDocumentUtils'
 
 // Define type for document records
 interface DocumentRecord {
@@ -24,27 +25,67 @@ export default function Dashboard() {
   
   // State for recent documents with proper typing
   const [recentDocuments, setRecentDocuments] = useState<DocumentRecord[]>([])
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true)
 
   useEffect(() => {
     // Redirect to login if not authenticated
     if (!isLoading && !isAuthenticated) {
       router.push('/login')
+      return
     }
     
-    // Load recent documents from localStorage
+    // Load recent documents from Supabase if user is authenticated
+    if (user) {
+      loadRecentDocuments(user.id)
+    }
+  }, [isAuthenticated, isLoading, router, user])
+
+  // Load recent documents from Supabase with localStorage as fallback
+  const loadRecentDocuments = async (userId: string) => {
+    setIsLoadingDocuments(true)
     try {
-      const storedDocs = localStorage.getItem('analyzedDocuments')
-      if (storedDocs) {
+      const userDocuments = await getAllUserDocuments(userId)
+      
+      if (userDocuments && userDocuments.length > 0) {
         // Only display the 3 most recent documents
-        const parsedDocs = JSON.parse(storedDocs)
-        setRecentDocuments(parsedDocs.slice(0, 3))
+        setRecentDocuments(userDocuments.slice(0, 3))
+      } else {
+        // If no documents found in Supabase, try localStorage as fallback
+        try {
+          const storedDocs = localStorage.getItem('analyzedDocuments')
+          if (storedDocs) {
+            const parsedDocs = JSON.parse(storedDocs)
+            setRecentDocuments(parsedDocs.slice(0, 3))
+          } else {
+            setRecentDocuments([])
+          }
+        } catch (localError) {
+          console.error('Error loading documents from localStorage:', localError)
+          setRecentDocuments([])
+        }
       }
     } catch (error) {
-      console.error('Error loading documents:', error)
+      console.error('Error loading documents from Supabase:', error)
+      
+      // Try to get documents from localStorage as fallback
+      try {
+        const storedDocs = localStorage.getItem('analyzedDocuments')
+        if (storedDocs) {
+          const parsedDocs = JSON.parse(storedDocs)
+          setRecentDocuments(parsedDocs.slice(0, 3))
+        } else {
+          setRecentDocuments([])
+        }
+      } catch (localError) {
+        console.error('Error loading documents from localStorage:', localError)
+        setRecentDocuments([])
+      }
+    } finally {
+      setIsLoadingDocuments(false)
     }
-  }, [isAuthenticated, isLoading, router])
+  }
 
-  if (isLoading) {
+  if (isLoading || isLoadingDocuments) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
