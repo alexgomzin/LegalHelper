@@ -83,7 +83,7 @@ export default function TestCheckout() {
       window.Paddle.Checkout.open({
         items: [
           {
-            priceId: priceId,
+            price_id: priceId,
             quantity: 1
           }
         ],

@@ -267,14 +267,14 @@ export default function Checkout() {
           const checkoutData = {
             items: [
               {
-                priceId: priceId,
+                price_id: priceId,
                 quantity: 1
               }
             ],
             customer: {
               email: customerEmail
             },
-            customData: {
+            custom_data: {
               user_id: user?.id
             },
             settings: {
