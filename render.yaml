@@ -20,7 +20,7 @@ services:
       - key: NEXT_PUBLIC_PADDLE_VENDOR_ID
         sync: false
       - key: NEXT_PUBLIC_PADDLE_ENVIRONMENT
-        value: sandbox
+        sync: false
       - key: NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT
         sync: false
       - key: NEXT_PUBLIC_PADDLE_5_PACK
