@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy</title>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p><strong>Effective Date:</strong> [Insert Date]</p>
+
+  <h2>1. What We Collect</h2>
+  <ul>
+    <li>Uploaded documents</li>
+    <li>Account information (e.g., email, name)</li>
+    <li>Usage data (e.g., interactions, logs)</li>
+  </ul>
+
+  <h2>2. How We Use Data</h2>
+  <ul>
+    <li>To deliver and improve document analysis services</li>
+    <li>To enhance AI accuracy (in anonymized form)</li>
+    <li>For user support and operational communication</li>
+  </ul>
+
+  <h2>3. Data Security</h2>
+  <p>We implement encryption and other security measures to protect your data. Uploaded documents are deleted after [X days] unless explicitly saved by the user.</p>
+
+  <h2>4. Sharing Data</h2>
+  <p>We do not sell or share your data except:</p>
+  <ul>
+    <li>With your consent</li>
+    <li>To comply with legal obligations</li>
+    <li>With service providers under strict agreements</li>
+  </ul>
+
+  <h2>5. Your Rights</h2>
+  <p>You can request access, correction, or deletion of your data by contacting us at [Your Contact Email]</p>
+
+  <h2>6. Contact</h2>
+  <p>For any privacy-related concerns, reach out to us: [Your Contact Email]</p>
+</body>
+</html>

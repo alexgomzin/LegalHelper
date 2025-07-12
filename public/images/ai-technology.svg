@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="400" viewBox="0 0 500 400" fill="none">
+  <!-- Background -->
+  <rect x="50" y="50" width="400" height="300" rx="20" fill="#f0f9ff" />
+  
+  <!-- Brain outline -->
+  <path d="M250 100C180 100 150 150 150 200C150 250 180 300 250 300C320 300 350 250 350 200C350 150 320 100 250 100Z" stroke="#0ea5e9" stroke-width="3" fill="#e0f2fe" />
+  
+  <!-- Brain details -->
+  <path d="M200 150C210 140 230 135 250 135C270 135 290 140 300 150C310 160 315 180 315 200C315 220 310 240 300 250C290 260 270 265 250 265C230 265 210 260 200 250C190 240 185 220 185 200C185 180 190 160 200 150Z" stroke="#0ea5e9" stroke-width="2" fill="white" />
+  
+  <!-- Circuit lines -->
+  <line x1="150" y1="180" x2="120" y2="180" stroke="#0ea5e9" stroke-width="2" />
+  <line x1="150" y1="220" x2="120" y2="220" stroke="#0ea5e9" stroke-width="2" />
+  <line x1="350" y1="180" x2="380" y2="180" stroke="#0ea5e9" stroke-width="2" />
+  <line x1="350" y1="220" x2="380" y2="220" stroke="#0ea5e9" stroke-width="2" />
+  <line x1="250" y1="100" x2="250" y2="70" stroke="#0ea5e9" stroke-width="2" />
+  <line x1="250" y1="300" x2="250" y2="330" stroke="#0ea5e9" stroke-width="2" />
+  
+  <!-- Circuit nodes -->
+  <circle cx="120" cy="180" r="5" fill="#0ea5e9" />
+  <circle cx="120" cy="220" r="5" fill="#0ea5e9" />
+  <circle cx="380" cy="180" r="5" fill="#0ea5e9" />
+  <circle cx="380" cy="220" r="5" fill="#0ea5e9" />
+  <circle cx="250" cy="70" r="5" fill="#0ea5e9" />
+  <circle cx="250" cy="330" r="5" fill="#0ea5e9" />
+  
+  <!-- Document icons -->
+  <rect x="90" y="160" width="20" height="30" rx="2" fill="white" stroke="#94a3b8" stroke-width="1" />
+  <line x1="95" y1="170" x2="105" y2="170" stroke="#e2e8f0" stroke-width="1" />
+  <line x1="95" y1="175" x2="105" y2="175" stroke="#e2e8f0" stroke-width="1" />
+  <line x1="95" y1="180" x2="105" y2="180" stroke="#e2e8f0" stroke-width="1" />
+  
+  <rect x="90" y="200" width="20" height="30" rx="2" fill="white" stroke="#94a3b8" stroke-width="1" />
+  <line x1="95" y1="210" x2="105" y2="210" stroke="#e2e8f0" stroke-width="1" />
+  <line x1="95" y1="215" x2="105" y2="215" stroke="#e2e8f0" stroke-width="1" />
+  <line x1="95" y1="220" x2="105" y2="220" stroke="#e2e8f0" stroke-width="1" />
+  
+  <!-- Analysis icons -->
+  <rect x="390" y="160" width="20" height="30" rx="2" fill="white" stroke="#94a3b8" stroke-width="1" />
+  <rect x="395" y="170" width="10" height="5" rx="1" fill="#fecaca" />
+  <rect x="395" y="180" width="10" height="5" rx="1" fill="#fef3c7" />
+  
+  <rect x="390" y="200" width="20" height="30" rx="2" fill="white" stroke="#94a3b8" stroke-width="1" />
+  <rect x="395" y="210" width="10" height="5" rx="1" fill="#fecaca" />
+  <rect x="395" y="220" width="10" height="5" rx="1" fill="#fef3c7" />
+  
+  <!-- Connections between brain lobes -->
+  <path d="M230 190C235 195 245 205 250 200" stroke="#0ea5e9" stroke-width="1.5" />
+  <path d="M250 200C255 195 265 185 270 190" stroke="#0ea5e9" stroke-width="1.5" />
+  <path d="M240 170C245 175 255 185 250 190" stroke="#0ea5e9" stroke-width="1.5" />
+  <path d="M250 190C255 185 258 175 260 170" stroke="#0ea5e9" stroke-width="1.5" />
+  <path d="M230 210C235 215 245 225 250 220" stroke="#0ea5e9" stroke-width="1.5" />
+  <path d="M250 220C255 215 265 205 270 210" stroke="#0ea5e9" stroke-width="1.5" />
+  
+  <!-- Pulse animations (simulated here with circles) -->
+  <circle cx="210" cy="180" r="3" fill="#0ea5e9" />
+  <circle cx="285" cy="220" r="3" fill="#0ea5e9" />
+  <circle cx="250" cy="160" r="3" fill="#0ea5e9" />
+  <circle cx="230" cy="240" r="3" fill="#0ea5e9" />
+</svg> 
