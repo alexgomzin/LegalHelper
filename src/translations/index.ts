@@ -52,6 +52,13 @@ const translations = {
       viewAllDocuments: 'View all documents →',
       downloadPdfAlert: 'PDF download functionality will be implemented soon',
       downloadJsonError: 'Failed to download results. Please try again.',
+      
+      // Footer links
+      termsOfService: 'Terms of Service',
+      privacyPolicy: 'Privacy Policy',
+      refundPolicy: 'Refund Policy',
+      contactEmail: 'Contact: legalhelperai@protonmail.com',
+      allRightsReserved: 'All rights reserved',
       subscriptionPage: {
         title: 'Choose Your Plan',
         subtitle: 'Get the legal document analysis power you need with flexible pricing options',
@@ -476,6 +483,13 @@ const translations = {
       viewAllDocuments: 'Посмотреть все документы →',
       downloadPdfAlert: 'Функция скачивания PDF будет реализована в ближайшее время',
       downloadJsonError: 'Не удалось скачать результаты. Пожалуйста, попробуйте еще раз.',
+      
+      // Footer links
+      termsOfService: 'Условия обслуживания',
+      privacyPolicy: 'Политика конфиденциальности',
+      refundPolicy: 'Политика возврата',
+      contactEmail: 'Контакт: legalhelperai@protonmail.com',
+      allRightsReserved: 'Все права защищены',
       subscriptionPage: {
         title: 'Выберите свой план',
         subtitle: 'Получите мощность анализа юридических документов с гибкими ценовыми опциями',
@@ -900,6 +914,13 @@ const translations = {
       viewAllDocuments: 'Alle Dokumente anzeigen →',
       downloadPdfAlert: 'PDF-Download-Funktionalität wird bald implementiert',
       downloadJsonError: 'Fehler beim Herunterladen der Ergebnisse. Bitte versuchen Sie es erneut.',
+      
+      // Footer links
+      termsOfService: 'Nutzungsbedingungen',
+      privacyPolicy: 'Datenschutzrichtlinie',
+      refundPolicy: 'Rückerstattungsrichtlinie',
+      contactEmail: 'Kontakt: legalhelperai@protonmail.com',
+      allRightsReserved: 'Alle Rechte vorbehalten',
       subscriptionPage: {
         title: 'Wählen Sie Ihren Plan',
         subtitle: 'Erhalten Sie die Leistung der Rechtsdokument-Analyse mit flexiblen Preisoptionen',
@@ -1324,6 +1345,13 @@ const translations = {
       viewAllDocuments: 'Ver todos los documentos →',
       downloadPdfAlert: 'La funcionalidad de descarga PDF se implementará pronto',
       downloadJsonError: 'Error al descargar los resultados. Por favor, inténtelo de nuevo.',
+      
+      // Footer links
+      termsOfService: 'Términos de servicio',
+      privacyPolicy: 'Política de privacidad',
+      refundPolicy: 'Política de reembolso',
+      contactEmail: 'Contacto: legalhelperai@protonmail.com',
+      allRightsReserved: 'Todos los derechos reservados',
       subscriptionPage: {
         title: 'Elija su plan',
         subtitle: 'Obtenga el poder de análisis de documentos legales con opciones de precios flexibles',
@@ -1748,6 +1776,13 @@ const translations = {
       viewAllDocuments: 'Tüm belgeleri görüntüle →',
       downloadPdfAlert: 'PDF indirme işlevi yakında uygulanacak',
       downloadJsonError: 'Sonuçlar indirilemedi. Lütfen tekrar deneyin.',
+      
+      // Footer links
+      termsOfService: 'Hizmet şartları',
+      privacyPolicy: 'Gizlilik politikası',
+      refundPolicy: 'İade politikası',
+      contactEmail: 'İletişim: legalhelperai@protonmail.com',
+      allRightsReserved: 'Tüm hakları saklıdır',
       subscriptionPage: {
         title: 'Planınızı Seçin',
         subtitle: 'Esnek fiyatlandırma seçenekleriyle ihtiyacınız olan hukuki belge analiz gücünü elde edin',
