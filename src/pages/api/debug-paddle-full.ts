@@ -130,25 +130,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // Identify critical issues
-    const criticalIssues = [];
-    if (!clientToken) {
-      criticalIssues.push('Missing NEXT_PUBLIC_PADDLE_CLIENT_TOKEN - This is the most likely cause of the 400 error');
-    }
-    if (!apiKey) {
-      criticalIssues.push('Missing PADDLE_API_KEY - Required for production mode');
-    }
-    if (!vendorId) {
-      criticalIssues.push('Missing NEXT_PUBLIC_PADDLE_VENDOR_ID');
-    }
-    if (priceValidation.some(p => !p.valid)) {
-      criticalIssues.push('Invalid price IDs detected');
-    }
-    if (environment === 'production' && clientToken && !clientToken.startsWith('live_')) {
-      criticalIssues.push('Using sandbox client token in production mode');
-    }
-    if (environment === 'production' && apiKey && !apiKey.startsWith('live_')) {
-      criticalIssues.push('Using sandbox API key in production mode');
+    // API Key validation
+    const apiKeyValidation = {
+      value: apiKey ? `${apiKey.substring(0, 20)}...` : 'NOT_SET',
+      valid: !!apiKey,
+      issue: !apiKey ? 'Missing PADDLE_API_KEY' : null,
+      expectedFormat: environment === 'production' ? 'Should start with "pdl_live_"' : 'Should start with "pdl_test_"'
+    };
+
+    // Critical issues detection
+    const criticalIssues: string[] = [];
+    
+    if (!vendorId) criticalIssues.push('Missing NEXT_PUBLIC_PADDLE_VENDOR_ID');
+    if (!clientToken) criticalIssues.push('Missing NEXT_PUBLIC_PADDLE_CLIENT_TOKEN');
+    if (!apiKey) criticalIssues.push('Missing PADDLE_API_KEY');
+    
+    // Check if API key matches environment
+    if (apiKey) {
+      if (environment === 'production' && !apiKey.startsWith('pdl_live_')) {
+        criticalIssues.push('Using sandbox API key in production mode');
+      } else if (environment === 'sandbox' && !apiKey.startsWith('pdl_test_')) {
+        criticalIssues.push('Using production API key in sandbox mode');
+      }
     }
 
     // Generate recommendations
