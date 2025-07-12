@@ -38,17 +38,17 @@ export async function storeDocumentAnalysis(
     // Store in Supabase with retry mechanism
     await retryOperation(async () => {
       const { error } = await supabase
-        .from('document_analysis')
-        .upsert({
-          user_id: userId,
-          document_id: docId,
-          document_name: docName,
-          analysis,
-          status,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,document_id'
-        });
+      .from('document_analysis')
+      .upsert({
+        user_id: userId,
+        document_id: docId,
+        document_name: docName,
+        analysis,
+        status,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,document_id'
+      });
 
       if (error) throw error;
     });
@@ -143,14 +143,14 @@ export async function getDocumentAnalysis(userId: string, docId: string): Promis
     
     // Try to get from Supabase with retry mechanism
     const supabaseAnalysis = await retryOperation(async () => {
-      const { data, error } = await supabase
-        .from('document_analysis')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('document_id', docId)
-        .single();
+    const { data, error } = await supabase
+      .from('document_analysis')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('document_id', docId)
+      .single();
 
-      if (error) {
+    if (error) {
         if (error.code === 'PGRST116') {
           // No rows returned - this is expected, not an error
           return null;
@@ -216,11 +216,11 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
     
     // Get from Supabase with retry mechanism
     const supabaseDocuments = await retryOperation(async () => {
-      const { data, error } = await supabase
-        .from('document_analysis')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('document_analysis')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Supabase query error:', error);
@@ -298,12 +298,12 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
  * Gets documents from localStorage with error handling
  */
 function getLocalDocuments(): any[] {
-  try {
-    const localDocsStr = localStorage.getItem('analyzedDocuments');
-    return localDocsStr ? JSON.parse(localDocsStr) : [];
-  } catch (localError) {
-    console.error('Error getting local documents:', localError);
-    return [];
+    try {
+      const localDocsStr = localStorage.getItem('analyzedDocuments');
+      return localDocsStr ? JSON.parse(localDocsStr) : [];
+    } catch (localError) {
+      console.error('Error getting local documents:', localError);
+      return [];
   }
 }
 

@@ -276,11 +276,6 @@ export default function Checkout() {
             },
             custom_data: {
               user_id: user?.id
-            },
-            settings: {
-              displayMode: "overlay",
-              theme: "light",
-              locale: "en"
             }
           };
           

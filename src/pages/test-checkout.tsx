@@ -89,13 +89,6 @@ export default function TestCheckout() {
         ],
         customer: {
           email: 'test@example.com'
-        },
-        settings: {
-          displayMode: "overlay",
-          theme: "light",
-          locale: "en",
-          successUrl: `${window.location.origin}/dashboard?purchase=success`,
-          cancelUrl: `${window.location.origin}/pricing?purchase=cancelled`
         }
       });
     } catch (err) {
