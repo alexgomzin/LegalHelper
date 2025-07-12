@@ -316,7 +316,17 @@ const translations = {
       uploadingMessage: 'Your document is being uploaded. Please wait...',
       analyzingMessage: 'Our AI is analyzing your document for potential risks and issues...',
       scannedDocumentDetected: 'Scanned Document Detected',
-      scannedDocumentDescription: 'Your document appears to be scanned or has limited text content. For the best results, please upload a text-based PDF document. We\'ll try to process this one using OCR (Optical Character Recognition), but the analysis may be less accurate.'
+      scannedDocumentDescription: 'Your document appears to be scanned or has limited text content. For the best results, please upload a text-based PDF document. We\'ll try to process this one using OCR (Optical Character Recognition), but the analysis may be less accurate.',
+      progressMessages: {
+        initializing: 'Initializing analysis...',
+        extractingText: 'Extracting text from document...',
+        processingContent: 'Processing document content...',
+        analyzingRisks: 'Analyzing legal risks and issues...',
+        identifyingClauses: 'Identifying problematic clauses...',
+        generatingRecommendations: 'Generating recommendations...',
+        finalizing: 'Finalizing analysis results...',
+        almostComplete: 'Analysis almost complete...'
+      }
     },
     dashboard: {
       title: 'Dashboard - Legal Helper',
@@ -697,7 +707,17 @@ const translations = {
       uploadingMessage: 'Ваш документ загружается. Пожалуйста, подождите...',
       analyzingMessage: 'Наш ИИ анализирует ваш документ на наличие потенциальных рисков и проблем...',
       scannedDocumentDetected: 'Обнаружен сканированный документ',
-      scannedDocumentDescription: 'Ваш документ похоже является сканированным или имеет ограниченное текстовое содержание. Для наилучших результатов, пожалуйста, загрузите документ PDF с текстовым слоем. Мы попробуем обработать этот документ с помощью OCR (оптического распознавания символов), но анализ может быть менее точным.'
+      scannedDocumentDescription: 'Ваш документ похоже является сканированным или имеет ограниченное текстовое содержание. Для наилучших результатов, пожалуйста, загрузите документ PDF с текстовым слоем. Мы попробуем обработать этот документ с помощью OCR (оптического распознавания символов), но анализ может быть менее точным.',
+      progressMessages: {
+        initializing: 'Инициализация анализа...',
+        extractingText: 'Извлечение текста из документа...',
+        processingContent: 'Обработка содержимого документа...',
+        analyzingRisks: 'Анализ юридических рисков и проблем...',
+        identifyingClauses: 'Выявление проблемных пунктов...',
+        generatingRecommendations: 'Генерация рекомендаций...',
+        finalizing: 'Завершение анализа...',
+        almostComplete: 'Анализ почти завершен...'
+      }
     },
     dashboard: {
       title: 'Панель управления - Юридический Помощник',
@@ -1078,7 +1098,17 @@ const translations = {
       uploadingMessage: 'Ihr Dokument wird hochgeladen. Bitte warten...',
       analyzingMessage: 'Unsere KI analysiert Ihr Dokument auf potenzielle Risiken und Probleme...',
       scannedDocumentDetected: 'Gescanntes Dokument erkannt',
-      scannedDocumentDescription: 'Ihr Dokument scheint gescannt zu sein oder hat begrenzten Textinhalt. Wir werden es mit OCR (Optische Zeichenerkennung) verarbeiten, um den Text zu extrahieren.'
+      scannedDocumentDescription: 'Ihr Dokument scheint gescannt zu sein oder hat begrenzten Textinhalt. Wir werden es mit OCR (Optische Zeichenerkennung) verarbeiten, um den Text zu extrahieren.',
+      progressMessages: {
+        initializing: 'Analyse wird initialisiert...',
+        extractingText: 'Text wird aus Dokument extrahiert...',
+        processingContent: 'Dokumentinhalt wird verarbeitet...',
+        analyzingRisks: 'Rechtliche Risiken und Probleme werden analysiert...',
+        identifyingClauses: 'Problematische Klauseln werden identifiziert...',
+        generatingRecommendations: 'Empfehlungen werden generiert...',
+        finalizing: 'Analyseergebnisse werden finalisiert...',
+        almostComplete: 'Analyse ist fast abgeschlossen...'
+      }
     },
     dashboard: {
       title: 'Dashboard - Rechtlicher Helfer',
@@ -1459,7 +1489,17 @@ const translations = {
       uploadingMessage: 'Tu documento se está subiendo. Por favor, espera...',
       analyzingMessage: 'Nuestra IA está analizando tu documento en busca de riesgos y problemas potenciales...',
       scannedDocumentDetected: 'Documento escaneado detectado',
-      scannedDocumentDescription: 'Tu documento parece estar escaneado o tiene contenido de texto limitado. Para obtener los mejores resultados, por favor sube un documento PDF basado en texto. Intentaremos procesar este usando OCR (Reconocimiento Óptico de Caracteres), pero el análisis puede ser menos preciso.'
+      scannedDocumentDescription: 'Tu documento parece estar escaneado o tiene contenido de texto limitado. Para obtener los mejores resultados, por favor sube un documento PDF basado en texto. Intentaremos procesar este usando OCR (Reconocimiento Óptico de Caracteres), pero el análisis puede ser menos preciso.',
+      progressMessages: {
+        initializing: 'Inicializando análisis...',
+        extractingText: 'Extrayendo texto del documento...',
+        processingContent: 'Procesando contenido del documento...',
+        analyzingRisks: 'Analizando riesgos legales y problemas...',
+        identifyingClauses: 'Identificando cláusulas problemáticas...',
+        generatingRecommendations: 'Generando recomendaciones...',
+        finalizing: 'Finalizando resultados del análisis...',
+        almostComplete: 'Análisis casi completo...'
+      }
     },
     dashboard: {
       title: 'Panel de control - Asistente Legal',
@@ -1840,7 +1880,17 @@ const translations = {
       uploadingMessage: 'Belgeniz yükleniyor. Lütfen bekleyin...',
       analyzingMessage: 'Yapay zekamız belgenizi potansiyel riskler ve sorunlar için analiz ediyor...',
       scannedDocumentDetected: 'Taranmış Belge Tespit Edildi',
-      scannedDocumentDescription: 'Belgeniz taranmış gibi görünüyor veya sınırlı metin içeriğine sahip. En iyi sonuçlar için, lütfen metin tabanlı bir PDF belgesi yükleyin. Bu belgeyi OCR (Optik Karakter Tanıma) kullanarak işlemeye çalışacağız, ancak analiz daha az doğru olabilir.'
+      scannedDocumentDescription: 'Belgeniz taranmış gibi görünüyor veya sınırlı metin içeriğine sahip. En iyi sonuçlar için, lütfen metin tabanlı bir PDF belgesi yükleyin. Bu belgeyi OCR (Optik Karakter Tanıma) kullanarak işlemeye çalışacağız, ancak analiz daha az doğru olabilir.',
+      progressMessages: {
+        initializing: 'Analiz başlatılıyor...',
+        extractingText: 'Belgeden metin çıkarılıyor...',
+        processingContent: 'Belge içeriği işleniyor...',
+        analyzingRisks: 'Hukuki riskler ve sorunlar analiz ediliyor...',
+        identifyingClauses: 'Sorunlu maddeler belirleniyor...',
+        generatingRecommendations: 'Öneriler oluşturuluyor...',
+        finalizing: 'Analiz sonuçları tamamlanıyor...',
+        almostComplete: 'Analiz neredeyse tamamlandı...'
+      }
     },
     dashboard: {
       title: 'Kontrol Paneli - Hukuk Asistanı',

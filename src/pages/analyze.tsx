@@ -9,6 +9,7 @@ import DocumentUploader from '@/components/DocumentUploader'
 import AnalysisResults from '@/components/AnalysisResults'
 import ScannedPdfProcessor from '@/components/ScannedPdfProcessor'
 import CreditStatus from '@/components/CreditStatus'
+import AnalysisProgressIndicator from '@/components/AnalysisProgressIndicator'
 import { useTranslation } from '@/contexts/LanguageContext'
 import { processPDF } from '@/utils/pdfProcessing'
 import { updateDocumentStatus, storeAnalysisResults, addDocument } from '@/utils/documentUtils'
@@ -639,17 +640,11 @@ export default function AnalyzePage() {
           </div>
         )}
         
-        {isAnalyzing && !needsClientProcessing && (
-          <div className="my-8">
-            <h3 className="text-lg font-medium mb-2">{t('analyze.analyzingDocument')}</h3>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-              <div 
-                className="bg-green-600 h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: '100%' }}
-              ></div>
-            </div>
-            <p className="text-gray-500">{t('analyze.analyzingMessage')}</p>
-          </div>
+        {!needsClientProcessing && (
+          <AnalysisProgressIndicator 
+            isAnalyzing={isAnalyzing}
+            duration={45000} // 45 seconds expected duration
+          />
         )}
         
         {needsClientProcessing && uploadedFile && (
