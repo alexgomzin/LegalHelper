@@ -45,9 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               customer: {
                 email: customerEmail
               },
-              custom_data: {
-                user_id: userId
-              },
+              ...(userId && { custom_data: { user_id: userId } }),
               checkout: {
                 url: successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success'
               }
@@ -118,9 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           customer: {
             email: customerEmail
           },
-          custom_data: {
-            user_id: userId
-          },
+          ...(userId && { custom_data: { user_id: userId } }),
           checkout: {
             url: successUrl || 'https://legalhelper.onrender.com/dashboard?purchase=success'
           }

@@ -132,7 +132,7 @@ export default function Checkout() {
             }
             
             // Initialize Paddle with the correct parameters for Paddle Billing
-            const initConfig: any = {
+            window.Paddle.Initialize({
               token: clientToken,
               eventCallback: function(data: any) {
                 console.log('Paddle event:', data);
@@ -151,14 +151,7 @@ export default function Checkout() {
                   console.warn('Paddle checkout warning:', data);
                 }
               }
-            };
-
-            // Add vendor ID if available (required for some Paddle configurations)
-            if (process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID) {
-              initConfig.vendor = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
-            }
-
-            window.Paddle.Initialize(initConfig);
+            });
             console.log('Paddle initialized successfully');
             setPaddleLoaded(true);
           } catch (error) {
