@@ -132,7 +132,7 @@ export default function Checkout() {
             }
             
             // Initialize Paddle with the correct parameters for Paddle Billing
-            window.Paddle.Initialize({
+            const initConfig: any = {
               token: clientToken,
               eventCallback: function(data: any) {
                 console.log('Paddle event:', data);
@@ -151,7 +151,14 @@ export default function Checkout() {
                   console.warn('Paddle checkout warning:', data);
                 }
               }
-            });
+            };
+
+            // Add vendor ID if available (required for some Paddle configurations)
+            if (process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID) {
+              initConfig.vendor = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID;
+            }
+
+            window.Paddle.Initialize(initConfig);
             console.log('Paddle initialized successfully');
             setPaddleLoaded(true);
           } catch (error) {
@@ -232,6 +239,7 @@ export default function Checkout() {
     console.log('priceId:', priceId);
     console.log('email:', email);
     console.log('user?.email:', user?.email);
+    console.log('user?.id:', user?.id);
     
     if (!priceId) {
       console.log('ERROR: No price selected');
@@ -247,10 +255,19 @@ export default function Checkout() {
       return;
     }
 
+    // Ensure we have a valid customer email
     const customerEmail = email || user?.email;
     if (!customerEmail) {
       console.log('ERROR: No customer email available');
       setCheckoutError('No customer email available. Please login or provide email.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail)) {
+      console.log('ERROR: Invalid email format:', customerEmail);
+      setCheckoutError('Invalid email format. Please check your email address.');
       return;
     }
 
@@ -264,7 +281,8 @@ export default function Checkout() {
         console.log('Using Paddle.js for checkout...');
         
         try {
-          const checkoutData = {
+          // Build checkout data with proper validation
+          const checkoutData: any = {
             items: [
               {
                 price_id: priceId,
@@ -273,12 +291,26 @@ export default function Checkout() {
             ],
             customer: {
               email: customerEmail
-            },
-            custom_data: {
-              user_id: user?.id
             }
           };
-          
+
+          // Only add custom_data if user ID exists
+          if (user?.id) {
+            checkoutData.custom_data = {
+              user_id: user.id
+            };
+          }
+
+          console.log('=== DETAILED CHECKOUT DATA ===');
+          console.log('Full checkout data:', JSON.stringify(checkoutData, null, 2));
+          console.log('Price ID:', priceId);
+          console.log('Customer email:', customerEmail);
+          console.log('User ID:', user?.id || 'NOT_PROVIDED');
+          console.log('Environment:', process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT);
+          console.log('Vendor ID:', process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID);
+          console.log('Client Token exists:', !!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN);
+          console.log('=== END DETAILED CHECKOUT DATA ===');
+
           console.log('Opening Paddle checkout with data:', checkoutData);
           console.log('Paddle object methods:', Object.keys(window.Paddle));
           console.log('Paddle Checkout methods:', window.Paddle.Checkout ? Object.keys(window.Paddle.Checkout) : 'No Checkout object');
@@ -297,7 +329,7 @@ export default function Checkout() {
             console.error('Error message:', paddleError.message);
             console.error('Error stack:', paddleError.stack);
           }
-          setCheckoutError(`Paddle.js Error: ${paddleError instanceof Error ? paddleError.message : 'Unknown error'}. Check console for details.`);
+       
           // Don't return here, fall through to API approach
         }
       } else {
@@ -318,7 +350,7 @@ export default function Checkout() {
         body: JSON.stringify({
           priceId: priceId,
           customerEmail: customerEmail,
-          userId: user?.id,
+          userId: user?.id || null,
           successUrl: successUrl || `${window.location.origin}/dashboard?purchase=success`,
           cancelUrl: cancelUrl || `${window.location.origin}/pricing?purchase=cancelled`
         }),
@@ -341,7 +373,7 @@ export default function Checkout() {
           console.log('Trying sandbox URL:', sandboxUrl);
           window.location.href = sandboxUrl;
         } else {
-        setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
+          setCheckoutError(`API Error: ${data.error || 'Failed to create checkout'}. ${data.note || ''}`);
         }
       }
     } catch (error) {
