@@ -23,14 +23,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Use the proper API endpoints for hosted checkouts
+    // Use the correct API endpoints for transactions (which create hosted checkouts)
     const paddleApiUrl = environment === 'sandbox' 
-      ? 'https://sandbox-api.paddle.com/checkouts'
-      : 'https://api.paddle.com/checkouts';
+      ? 'https://sandbox-api.paddle.com/transactions'
+      : 'https://api.paddle.com/transactions';
 
-    console.log('Using hosted checkout API:', paddleApiUrl);
+    console.log('Using transaction API for hosted checkout:', paddleApiUrl);
 
-    // Create a hosted checkout instead of a transaction
+    // Create a transaction which automatically creates a hosted checkout
+    // For production, we let Paddle use the default payment link configured in the dashboard
     const requestBody = {
       items: [
         {
@@ -38,11 +39,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           quantity: 1
         }
       ],
-      customer_email: customerEmail,
-      success_url: successUrl || `${process.env.NEXT_PUBLIC_BASE_URL || 'https://legalhelper.onrender.com'}/dashboard?purchase=success&_ptxn={transaction_id}`,
-      cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_BASE_URL || 'https://legalhelper.onrender.com'}/pricing?purchase=cancelled`,
+      customer: {
+        email: customerEmail
+      },
       ...(userId && { custom_data: { user_id: userId } })
     };
+
+    // Only add checkout URLs if they're provided and the domain is approved
+    if (successUrl || cancelUrl) {
+      requestBody.checkout = {
+        ...(successUrl && { url: successUrl }),
+        ...(cancelUrl && { cancel_url: cancelUrl })
+      };
+    }
 
     console.log('Hosted checkout request:', JSON.stringify(requestBody, null, 2));
 
@@ -59,15 +68,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Hosted checkout response:', { status: response.status, data });
 
     if (response.ok && data.data) {
-      console.log('Successfully created hosted checkout');
+      console.log('Successfully created transaction with hosted checkout');
       return res.status(200).json({
         success: true,
-        checkoutUrl: data.data.url, // This should be the actual Paddle payment page
-        checkoutId: data.data.id,
-        method: 'hosted_checkout'
+        checkoutUrl: data.data.checkout?.url, // Get checkout URL from transaction response
+        checkoutId: data.data.checkout?.id,
+        transactionId: data.data.id,
+        method: 'transaction_checkout'
       });
     } else {
-      console.error('Hosted checkout creation failed:', { status: response.status, data });
+      console.error('Transaction creation failed:', { status: response.status, data });
       return res.status(400).json({ 
         error: 'Failed to create hosted checkout',
         details: data.error || 'Unknown error',
