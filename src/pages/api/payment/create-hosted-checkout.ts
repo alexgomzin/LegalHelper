@@ -84,14 +84,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       } else {
         // For ready transactions, use the checkout URL from response
-        return res.status(200).json({
-          success: true,
+      return res.status(200).json({
+        success: true,
           checkoutUrl: data.data.checkout?.url,
           checkoutId: data.data.checkout?.id,
           transactionId: data.data.id,
           method: 'transaction_checkout',
           status: data.data.status
-        });
+      });
       }
     } else {
       console.error('Transaction creation failed:', { status: response.status, data });

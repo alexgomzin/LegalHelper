@@ -21,6 +21,10 @@ export default function Login() {
     if (params.get('registered') === 'true') {
       setRegistered(true)
     }
+    if (params.get('confirmed') === 'true') {
+      setError('')
+      setRegistered(true)
+    }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,7 +75,10 @@ export default function Login() {
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-green-800">
-                          Registration successful! Please log in with your new account.
+                          {router.query.confirmed === 'true' 
+                            ? 'Email confirmed successfully! You can now log in.'
+                            : 'Registration successful! Please check your email for a confirmation link, then return here to log in.'
+                          }
                         </p>
                       </div>
                     </div>

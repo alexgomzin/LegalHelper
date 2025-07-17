@@ -203,57 +203,57 @@ export default function Pricing() {
                         ? 'bg-gray-400 cursor-not-allowed' 
                         : 'bg-green-600 hover:bg-green-700'
                     }`}
-                                      >
+                  >
                       {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.payAmount')}
-                    </button>
-                  ) : tier.id === 'packages' ? (
-                    <div className="mt-8 space-y-2">
-                      <button
-                        onClick={() => handlePurchase('pack5')}
-                        disabled={isLoading}
-                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                          isLoading 
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyStarterPack')}
-                      </button>
-                      <button
-                        onClick={() => handlePurchase('pack15')}
-                        disabled={isLoading}
-                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                          isLoading 
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyProfessionalPack')}
-                      </button>
-                      <button
-                        onClick={() => handlePurchase('pack30')}
-                        disabled={isLoading}
-                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                          isLoading 
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyBusinessPack')}
-                      </button>
-                    </div>
-                  ) : tier.id === 'subscription' ? (
+                  </button>
+                ) : tier.id === 'packages' ? (
+                  <div className="mt-8 space-y-2">
                     <button
-                      onClick={() => handlePurchase('subscription')}
+                      onClick={() => handlePurchase('pack5')}
                       disabled={isLoading}
-                      className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
                         isLoading 
                           ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-purple-600 hover:bg-purple-700'
+                          : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                     >
-                      {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.subscribe')}
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyStarterPack')}
                     </button>
+                    <button
+                      onClick={() => handlePurchase('pack15')}
+                      disabled={isLoading}
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                        isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    >
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyProfessionalPack')}
+                    </button>
+                    <button
+                      onClick={() => handlePurchase('pack30')}
+                      disabled={isLoading}
+                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                        isLoading 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    >
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyBusinessPack')}
+                    </button>
+                  </div>
+                ) : tier.id === 'subscription' ? (
+                  <button
+                    onClick={() => handlePurchase('subscription')}
+                    disabled={isLoading}
+                    className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      isLoading 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-purple-600 hover:bg-purple-700'
+                    }`}
+                  >
+                      {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.subscribe')}
+                  </button>
                 ) : (
                   <button
                     onClick={() => handlePurchase(tier.id)}

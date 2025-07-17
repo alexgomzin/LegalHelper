@@ -370,8 +370,8 @@ export default function Checkout() {
             setCheckoutError('Payment system not loaded. Please refresh the page and try again.');
           }
         } else if (data.checkoutUrl) {
-          console.log('Redirecting to checkout URL:', data.checkoutUrl);
-          window.location.href = data.checkoutUrl;
+        console.log('Redirecting to checkout URL:', data.checkoutUrl);
+        window.location.href = data.checkoutUrl;
         } else {
           console.error('No checkout URL or transaction ID provided');
           setCheckoutError('Invalid response from payment system. Please try again.');

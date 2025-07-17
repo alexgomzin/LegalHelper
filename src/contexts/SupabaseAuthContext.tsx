@@ -148,7 +148,8 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             name
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/confirm-email`
         }
       })
 
