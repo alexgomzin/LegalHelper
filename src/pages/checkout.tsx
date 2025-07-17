@@ -346,9 +346,36 @@ export default function Checkout() {
       const data = await response.json();
       console.log('API Response Data:', data);
 
-      if (data.success && data.checkoutUrl) {
-        console.log('Redirecting to checkout URL:', data.checkoutUrl);
-        window.location.href = data.checkoutUrl;
+      if (data.success) {
+        if (data.useTransaction && data.transactionId) {
+          console.log('Using Paddle.js with transaction ID:', data.transactionId);
+          
+          // Use Paddle.js to open checkout with transaction ID
+          if (window.Paddle) {
+            try {
+              window.Paddle.Checkout.open({
+                transactionId: data.transactionId,
+                settings: {
+                  displayMode: 'overlay',
+                  theme: 'light',
+                  locale: 'en'
+                }
+              });
+            } catch (paddleError) {
+              console.error('Paddle.js error:', paddleError);
+              setCheckoutError('Failed to open Paddle checkout. Please try again.');
+            }
+          } else {
+            console.error('Paddle.js not loaded');
+            setCheckoutError('Payment system not loaded. Please refresh the page and try again.');
+          }
+        } else if (data.checkoutUrl) {
+          console.log('Redirecting to checkout URL:', data.checkoutUrl);
+          window.location.href = data.checkoutUrl;
+        } else {
+          console.error('No checkout URL or transaction ID provided');
+          setCheckoutError('Invalid response from payment system. Please try again.');
+        }
       } else {
         console.error('API Error:', data);
         console.error('Full API Error Details:', JSON.stringify(data, null, 2));

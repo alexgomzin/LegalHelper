@@ -69,13 +69,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (response.ok && data.data) {
       console.log('Successfully created transaction with hosted checkout');
-      return res.status(200).json({
-        success: true,
-        checkoutUrl: data.data.checkout?.url, // Get checkout URL from transaction response
-        checkoutId: data.data.checkout?.id,
-        transactionId: data.data.id,
-        method: 'transaction_checkout'
-      });
+      
+      // For draft transactions, we need to handle checkout differently
+      if (data.data.status === 'draft') {
+        console.log('Transaction is draft, frontend should use Paddle.js with transaction ID');
+        
+        return res.status(200).json({
+          success: true,
+          transactionId: data.data.id,
+          method: 'paddle_js_transaction',
+          status: data.data.status,
+          useTransaction: true,
+          message: 'Use Paddle.js with transaction ID to open checkout'
+        });
+      } else {
+        // For ready transactions, use the checkout URL from response
+        return res.status(200).json({
+          success: true,
+          checkoutUrl: data.data.checkout?.url,
+          checkoutId: data.data.checkout?.id,
+          transactionId: data.data.id,
+          method: 'transaction_checkout',
+          status: data.data.status
+        });
+      }
     } else {
       console.error('Transaction creation failed:', { status: response.status, data });
       return res.status(400).json({ 
