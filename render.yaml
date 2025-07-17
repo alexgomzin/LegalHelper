@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: legal-helper
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_VENDOR_ID
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_ENVIRONMENT
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_5_PACK
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_15_PACK
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_30_PACK
+        sync: false
+      - key: NEXT_PUBLIC_PADDLE_SUBSCRIPTION
+        sync: false 
