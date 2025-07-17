@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/SupabaseAuthContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 
 interface PricingTier {
   name: string;
@@ -18,6 +19,7 @@ interface PricingTier {
 export default function Pricing() {
   const [mounted, setMounted] = useState(false)
   const { user, isLoading } = useAuth()
+  const { t } = useTranslation()
   
   // Set mounted state for client-side rendering
   useEffect(() => {
@@ -26,63 +28,63 @@ export default function Pricing() {
   
   const pricingTiers: PricingTier[] = [
     {
-      name: 'Free Trial',
+      name: t('common.subscriptionPage.freeTrialTitle'),
       id: 'free',
       price: '$0',
-      description: 'Get started with one free document analysis',
+      description: t('common.subscriptionPage.freeDocumentAnalysis'),
       features: [
-        '1 free document analysis',
-        'Available only after registration',
-        'Basic risk identification',
-        'Document summarization',
-        'Email support'
+        `1 ${t('common.subscriptionPage.freeDocumentAnalysis')}`,
+        t('common.subscriptionPage.oneTimeOnly'),
+        t('common.subscriptionPage.riskIdentification'),
+        t('common.subscriptionPage.documentSummarization'),
+        t('common.subscriptionPage.emailSupport')
       ],
-      cta: 'Sign Up',
+      cta: t('common.signup'),
       mostPopular: false
     },
     {
-      name: 'Pay-as-you-go',
+      name: t('common.subscriptionPage.payAsYouGoTitle'),
       id: 'payg',
       price: '$1.50',
-      description: 'Pay per document analysis (one-time payment)',
+      description: t('common.subscriptionPage.perAnalysis'),
       features: [
-        '$1.50 per document analysis',
-        'No subscription required',
-        'Pay only when you need analysis',
-        'All analysis features included',
-        'Perfect for occasional use'
+        `$1.50 ${t('common.subscriptionPage.perAnalysis')}`,
+        t('common.subscriptionPage.noSubscriptionRequired'),
+        t('common.subscriptionPage.payOnlyWhenNeed'),
+        t('common.subscriptionPage.allAnalysisFeatures'),
+        t('common.subscriptionPage.perfectOccasionalUse')
       ],
-      cta: 'Pay Per Analysis',
+      cta: t('common.subscriptionPage.payAmount'),
       mostPopular: false
     },
     {
-      name: 'Analysis Packages',
+      name: t('common.subscriptionPage.analysisPackagesTitle'),
       id: 'packages',
       price: 'From $5.50',
-      description: 'Purchase analysis credits in convenient packs',
+      description: t('common.subscriptionPage.oneTimePurchase'),
       features: [
-        'Pack of 5 analyses – $5.50 ($0.90 per analysis)',
-        'Pack of 15 analyses – $12.00 ($0.80 per analysis)',
-        'One-time payment',
-        'Credits never expire',
-        'All analysis features included'
+        `5 ${t('common.subscriptionPage.analysesEach')}`,
+        `15 ${t('common.subscriptionPage.save11Percent')}`,
+        t('common.subscriptionPage.oneTimePurchase'),
+        t('common.subscriptionPage.creditsNeverExpire'),
+        t('common.subscriptionPage.allAnalysisFeatures')
       ],
-      cta: 'Buy Package',
+      cta: t('common.subscriptionPage.buyStarterPack'),
       mostPopular: false
     },
     {
-      name: 'Subscription',
+      name: t('common.subscriptionPage.subscriptionTitle'),
       id: 'subscription',
       price: '$30.00',
-      description: 'Monthly subscription with bulk analysis pack',
+      description: `50 ${t('common.subscriptionPage.analysesPerMonth')} – $30.00`,
       features: [
-        'Pack of 50 analyses per month – $30.00',
-        'Only $0.60 per analysis',
-        'Recurring monthly billing',
-        'Cancel anytime',
-        'Best value for high usage'
+        `50 ${t('common.subscriptionPage.analysesPerMonth')} – $30.00`,
+        t('common.subscriptionPage.onlyPerAnalysis'),
+        t('common.subscriptionPage.perMonth'),
+        t('common.subscriptionPage.cancelAnytime'),
+        t('common.subscriptionPage.bestForHighVolume')
       ],
-      cta: 'Subscribe',
+      cta: t('common.subscriptionPage.subscribe'),
       mostPopular: true
     }
   ]
@@ -129,19 +131,19 @@ export default function Pricing() {
   return (
     <>
       <Head>
-        <title>Pricing | LegalHelper</title>
+        <title>{t('common.pricing')} | LegalHelper</title>
       </Head>
       <div className="bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl sm:tracking-tight lg:text-5xl">
-              Simple, transparent pricing
+              {t('common.subscriptionPage.title')}
             </h1>
             <p className="mt-5 text-xl text-gray-500">
-              Choose the plan that's right for you and your legal document needs.
+              {t('common.subscriptionPage.subtitle')}
             </p>
             <p className="mt-3 text-lg text-gray-600 font-medium">
-              Note: One credit per analysis means one analysis is available.
+              {t('common.subscriptionPage.choosePackageNeed')}
             </p>
           </div>
           
@@ -158,7 +160,7 @@ export default function Pricing() {
                 {tier.mostPopular && (
                   <div className="absolute top-0 right-6 -translate-y-1/2 transform">
                     <span className="inline-flex rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-                      Most popular
+                      {t('common.subscriptionPage.mostPopular')}
                     </span>
                   </div>
                 )}
@@ -201,57 +203,57 @@ export default function Pricing() {
                         ? 'bg-gray-400 cursor-not-allowed' 
                         : 'bg-green-600 hover:bg-green-700'
                     }`}
-                  >
-                    {isLoading ? 'Loading...' : 'Pay $1.50 per Analysis'}
-                  </button>
-                ) : tier.id === 'packages' ? (
-                  <div className="mt-8 space-y-2">
+                                      >
+                      {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.payAmount')}
+                    </button>
+                  ) : tier.id === 'packages' ? (
+                    <div className="mt-8 space-y-2">
+                      <button
+                        onClick={() => handlePurchase('pack5')}
+                        disabled={isLoading}
+                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                          isLoading 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      >
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyStarterPack')}
+                      </button>
+                      <button
+                        onClick={() => handlePurchase('pack15')}
+                        disabled={isLoading}
+                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                          isLoading 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      >
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyProfessionalPack')}
+                      </button>
+                      <button
+                        onClick={() => handlePurchase('pack30')}
+                        disabled={isLoading}
+                        className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                          isLoading 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      >
+                        {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.buyBusinessPack')}
+                      </button>
+                    </div>
+                  ) : tier.id === 'subscription' ? (
                     <button
-                      onClick={() => handlePurchase('pack5')}
+                      onClick={() => handlePurchase('subscription')}
                       disabled={isLoading}
-                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
+                      className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
                         isLoading 
                           ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-700'
+                          : 'bg-purple-600 hover:bg-purple-700'
                       }`}
                     >
-                      {isLoading ? 'Loading...' : 'Buy 5 Analyses - $5.50'}
+                      {isLoading ? t('common.subscriptionPage.loading') : t('common.subscriptionPage.subscribe')}
                     </button>
-                    <button
-                      onClick={() => handlePurchase('pack15')}
-                      disabled={isLoading}
-                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                        isLoading 
-                          ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      }`}
-                    >
-                      {isLoading ? 'Loading...' : 'Buy 15 Analyses - $12.00'}
-                    </button>
-                    <button
-                      onClick={() => handlePurchase('pack30')}
-                      disabled={isLoading}
-                      className={`block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                        isLoading 
-                          ? 'bg-gray-400 cursor-not-allowed' 
-                          : 'bg-blue-600 hover:bg-blue-700'
-                      }`}
-                    >
-                      {isLoading ? 'Loading...' : 'Buy 30 Analyses - $22.50'}
-                    </button>
-                  </div>
-                ) : tier.id === 'subscription' ? (
-                  <button
-                    onClick={() => handlePurchase('subscription')}
-                    disabled={isLoading}
-                    className={`mt-8 block w-full rounded-md border border-transparent py-3 px-6 text-center font-medium text-white ${
-                      isLoading 
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-purple-600 hover:bg-purple-700'
-                    }`}
-                  >
-                    {isLoading ? 'Loading...' : 'Subscribe - $30.00/month'}
-                  </button>
                 ) : (
                   <button
                     onClick={() => handlePurchase(tier.id)}
@@ -273,7 +275,7 @@ export default function Pricing() {
           
           <div className="mt-12 text-center">
             <p className="text-base text-gray-500">
-              All prices are in USD. Paddle handles all payment processing.
+              {t('common.subscriptionPage.allPricesUSD')}
             </p>
           </div>
         </div>
@@ -284,21 +286,21 @@ export default function Pricing() {
         <div className="container mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
             <a href="/terms-of-service.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 hover:underline">
-              Terms of Service
+              {t('common.subscriptionPage.termsOfService')}
             </a>
             <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 hover:underline">
-              Privacy Policy
+              {t('common.subscriptionPage.privacyPolicy')}
             </a>
             <a href="/refund-policy.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 hover:underline">
-              Refund Policy
+              {t('common.subscriptionPage.refundPolicy')}
             </a>
             <a href="mailto:legalhelperai@protonmail.com" className="hover:text-gray-700 hover:underline flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
               </svg>
-              Contact: legalhelperai@protonmail.com
+              {t('common.subscriptionPage.contactEmail')}
             </a>
-            <span>© {new Date().getFullYear()} LegalHelper. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} {t('common.subscriptionPage.allRightsReserved')}</span>
           </div>
         </div>
       </footer>
