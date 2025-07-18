@@ -19,6 +19,67 @@ function notifyLanguageChange(newLanguage: Language) {
   languageChangeListeners.forEach(listener => listener(newLanguage));
 }
 
+// Function to detect user's preferred language
+function detectUserLanguage(): Language {
+  // Default fallback
+  const defaultLanguage: Language = 'en';
+  
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined') {
+    return defaultLanguage;
+  }
+
+  // Get browser language preferences
+  const browserLanguage = navigator.language || navigator.languages?.[0] || '';
+  
+  // Map common language codes to our supported languages
+  const languageMap: Record<string, Language> = {
+    'en': 'en',
+    'en-US': 'en',
+    'en-GB': 'en',
+    'en-CA': 'en',
+    'en-AU': 'en',
+    'ru': 'ru',
+    'ru-RU': 'ru',
+    'de': 'de',
+    'de-DE': 'de',
+    'de-AT': 'de',
+    'de-CH': 'de',
+    'es': 'es',
+    'es-ES': 'es',
+    'es-MX': 'es',
+    'es-AR': 'es',
+    'es-CO': 'es',
+    'es-PE': 'es',
+    'es-VE': 'es',
+    'es-CL': 'es',
+    'tr': 'tr',
+    'tr-TR': 'tr',
+  };
+
+  // Try exact match first
+  if (languageMap[browserLanguage]) {
+    return languageMap[browserLanguage];
+  }
+
+  // Try language code without region (e.g., 'en' from 'en-US')
+  const baseLanguage = browserLanguage.split('-')[0];
+  if (languageMap[baseLanguage]) {
+    return languageMap[baseLanguage];
+  }
+
+  // Check if any of our supported languages match
+  const supportedLanguages: Language[] = ['en', 'ru', 'de', 'es', 'tr'];
+  for (const lang of supportedLanguages) {
+    if (browserLanguage.toLowerCase().startsWith(lang)) {
+      return lang;
+    }
+  }
+
+  // If no match found, return default
+  return defaultLanguage;
+}
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
@@ -56,10 +117,10 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     };
   }, []);
 
-  // Initialize language from cookies and localStorage
+  // Initialize language with auto-detection
   useEffect(() => {
     try {
-      // Get from cookies
+      // First, check if user has a saved preference
       const cookies = parseCookies();
       const savedLanguage = cookies.language;
       
@@ -70,15 +131,44 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       } catch (error: unknown) {
         console.log('localStorage not available');
       }
-      
-      const langToUse = savedLanguage || localStorageLanguage || globalLanguage;
-      
-      if (langToUse && (langToUse === 'en' || langToUse === 'ru' || langToUse === 'de' || langToUse === 'es' || langToUse === 'tr')) {
-        setLanguageState(langToUse as Language);
-        globalLanguage = langToUse as Language;
+
+      // If user has saved preference, use it
+      if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ru' || savedLanguage === 'de' || savedLanguage === 'es' || savedLanguage === 'tr')) {
+        setLanguageState(savedLanguage as Language);
+        globalLanguage = savedLanguage as Language;
+        return;
       }
+
+      if (localStorageLanguage && (localStorageLanguage === 'en' || localStorageLanguage === 'ru' || localStorageLanguage === 'de' || localStorageLanguage === 'es' || localStorageLanguage === 'tr')) {
+        setLanguageState(localStorageLanguage as Language);
+        globalLanguage = localStorageLanguage as Language;
+        return;
+      }
+
+      // If no saved preference, auto-detect based on browser language
+      const detectedLanguage = detectUserLanguage();
+      console.log('Auto-detected language:', detectedLanguage);
+      
+      setLanguageState(detectedLanguage);
+      globalLanguage = detectedLanguage;
+      
+      // Save the auto-detected language
+      setCookie(null, 'language', detectedLanguage, {
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        path: '/',
+      });
+      
+      try {
+        localStorage.setItem('language', detectedLanguage);
+      } catch (error) {
+        console.error('Error setting language in localStorage:', error);
+      }
+
     } catch (error) {
-      console.error('Error accessing storage:', error);
+      console.error('Error in language detection:', error);
+      // Fallback to default language
+      setLanguageState(defaultLanguage);
+      globalLanguage = defaultLanguage;
     }
   }, []);
 

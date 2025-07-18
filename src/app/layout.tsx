@@ -10,6 +10,15 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Legal Helper',
   description: 'AI-powered legal document analysis',
+  icons: {
+    icon: [
+      {
+        url: '/favicon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    shortcut: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
