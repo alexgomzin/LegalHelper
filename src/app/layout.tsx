@@ -8,7 +8,7 @@ import NavBar from '@/components/NavBar';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Legal Helper',
+  title: 'LegalHelper',
   description: 'AI-powered legal document analysis',
   icons: {
     icon: [
