@@ -13,18 +13,55 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
+        url: '/favicon.ico',
+        type: 'image/x-icon',
+      },
+      {
+        url: '/favicon-16x16.png',
+        type: 'image/png',
+        sizes: '16x16',
+      },
+      {
+        url: '/favicon-32x32.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+      {
+        url: '/favicon-48x48.png',
+        type: 'image/png',
+        sizes: '48x48',
+      },
+      {
+        url: '/favicon-64x64.png',
+        type: 'image/png',
+        sizes: '64x64',
+      },
+      {
         url: '/favicon.svg',
         type: 'image/svg+xml',
       },
-      {
-        url: '/favicon.ico',
-        type: 'image/x-icon',
-        sizes: '32x32',
-      },
     ],
     shortcut: '/favicon.ico',
-    apple: '/favicon.svg',
+    apple: [
+      {
+        url: '/android-chrome-192x192.png',
+        sizes: '192x192',
+      },
+    ],
+    other: [
+      {
+        rel: 'android-chrome',
+        url: '/android-chrome-192x192.png',
+        sizes: '192x192',
+      },
+      {
+        rel: 'android-chrome',
+        url: '/android-chrome-512x512.png',
+        sizes: '512x512',
+      },
+    ],
   },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
