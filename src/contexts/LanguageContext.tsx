@@ -19,65 +19,70 @@ function notifyLanguageChange(newLanguage: Language) {
   languageChangeListeners.forEach(listener => listener(newLanguage));
 }
 
-// Function to detect user's preferred language
+// Function to detect user's preferred language (CLIENT-SIDE ONLY)
 function detectUserLanguage(): Language {
   // Default fallback
   const defaultLanguage: Language = 'en';
   
-  // Check if we're in a browser environment
-  if (typeof window === 'undefined') {
+  // Check if we're in a browser environment (client-side only)
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return defaultLanguage;
   }
 
-  // Get browser language preferences
-  const browserLanguage = navigator.language || navigator.languages?.[0] || '';
-  
-  // Map common language codes to our supported languages
-  const languageMap: Record<string, Language> = {
-    'en': 'en',
-    'en-US': 'en',
-    'en-GB': 'en',
-    'en-CA': 'en',
-    'en-AU': 'en',
-    'ru': 'ru',
-    'ru-RU': 'ru',
-    'de': 'de',
-    'de-DE': 'de',
-    'de-AT': 'de',
-    'de-CH': 'de',
-    'es': 'es',
-    'es-ES': 'es',
-    'es-MX': 'es',
-    'es-AR': 'es',
-    'es-CO': 'es',
-    'es-PE': 'es',
-    'es-VE': 'es',
-    'es-CL': 'es',
-    'tr': 'tr',
-    'tr-TR': 'tr',
-  };
+  try {
+    // Get browser language preferences
+    const browserLanguage = navigator.language || navigator.languages?.[0] || '';
+    
+    // Map common language codes to our supported languages
+    const languageMap: Record<string, Language> = {
+      'en': 'en',
+      'en-US': 'en',
+      'en-GB': 'en',
+      'en-CA': 'en',
+      'en-AU': 'en',
+      'ru': 'ru',
+      'ru-RU': 'ru',
+      'de': 'de',
+      'de-DE': 'de',
+      'de-AT': 'de',
+      'de-CH': 'de',
+      'es': 'es',
+      'es-ES': 'es',
+      'es-MX': 'es',
+      'es-AR': 'es',
+      'es-CO': 'es',
+      'es-PE': 'es',
+      'es-VE': 'es',
+      'es-CL': 'es',
+      'tr': 'tr',
+      'tr-TR': 'tr',
+    };
 
-  // Try exact match first
-  if (languageMap[browserLanguage]) {
-    return languageMap[browserLanguage];
-  }
-
-  // Try language code without region (e.g., 'en' from 'en-US')
-  const baseLanguage = browserLanguage.split('-')[0];
-  if (languageMap[baseLanguage]) {
-    return languageMap[baseLanguage];
-  }
-
-  // Check if any of our supported languages match
-  const supportedLanguages: Language[] = ['en', 'ru', 'de', 'es', 'tr'];
-  for (const lang of supportedLanguages) {
-    if (browserLanguage.toLowerCase().startsWith(lang)) {
-      return lang;
+    // Try exact match first
+    if (languageMap[browserLanguage]) {
+      return languageMap[browserLanguage];
     }
-  }
 
-  // If no match found, return default
-  return defaultLanguage;
+    // Try language code without region (e.g., 'en' from 'en-US')
+    const baseLanguage = browserLanguage.split('-')[0];
+    if (languageMap[baseLanguage]) {
+      return languageMap[baseLanguage];
+    }
+
+    // Check if any of our supported languages match
+    const supportedLanguages: Language[] = ['en', 'ru', 'de', 'es', 'tr'];
+    for (const lang of supportedLanguages) {
+      if (browserLanguage.toLowerCase().startsWith(lang)) {
+        return lang;
+      }
+    }
+
+    // If no match found, return default
+    return defaultLanguage;
+  } catch (error) {
+    console.error('Error in language detection:', error);
+    return defaultLanguage;
+  }
 }
 
 interface LanguageContextType {
@@ -99,7 +104,13 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const [language, setLanguageState] = useState<Language>(globalLanguage || defaultLanguage);
+  const [language, setLanguageState] = useState<Language>(defaultLanguage);
+  const [isClient, setIsClient] = useState(false);
+
+  // Track when we're on the client side to prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Listen for changes from other context instances
   useEffect(() => {
@@ -117,8 +128,11 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     };
   }, []);
 
-  // Initialize language with auto-detection
+  // Initialize language with auto-detection (CLIENT-SIDE ONLY)
   useEffect(() => {
+    // Only run on client side to prevent SSR issues
+    if (!isClient) return;
+
     try {
       // First, check if user has a saved preference
       const cookies = parseCookies();
@@ -132,14 +146,16 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
         console.log('localStorage not available');
       }
 
-      // If user has saved preference, use it
+      // If user has saved preference, use it (highest priority)
       if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ru' || savedLanguage === 'de' || savedLanguage === 'es' || savedLanguage === 'tr')) {
+        console.log('Using saved language from cookies:', savedLanguage);
         setLanguageState(savedLanguage as Language);
         globalLanguage = savedLanguage as Language;
         return;
       }
 
       if (localStorageLanguage && (localStorageLanguage === 'en' || localStorageLanguage === 'ru' || localStorageLanguage === 'de' || localStorageLanguage === 'es' || localStorageLanguage === 'tr')) {
+        console.log('Using saved language from localStorage:', localStorageLanguage);
         setLanguageState(localStorageLanguage as Language);
         globalLanguage = localStorageLanguage as Language;
         return;
@@ -147,33 +163,37 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
 
       // If no saved preference, auto-detect based on browser language
       const detectedLanguage = detectUserLanguage();
-      console.log('Auto-detected language:', detectedLanguage);
+      console.log('Auto-detected browser language:', navigator.language, '→ Mapped to:', detectedLanguage);
       
-      setLanguageState(detectedLanguage);
-      globalLanguage = detectedLanguage;
-      
-      // Save the auto-detected language
-      setCookie(null, 'language', detectedLanguage, {
-        maxAge: 30 * 24 * 60 * 60, // 30 days
-        path: '/',
-      });
-      
-      try {
-        localStorage.setItem('language', detectedLanguage);
-      } catch (error) {
-        console.error('Error setting language in localStorage:', error);
+      // Only set if different from default to avoid unnecessary updates
+      if (detectedLanguage !== defaultLanguage) {
+        setLanguageState(detectedLanguage);
+        globalLanguage = detectedLanguage;
+        
+        // Save the auto-detected language for next time
+        setCookie(null, 'language', detectedLanguage, {
+          maxAge: 30 * 24 * 60 * 60, // 30 days
+          path: '/',
+        });
+        
+        try {
+          localStorage.setItem('language', detectedLanguage);
+        } catch (error) {
+          console.error('Error setting language in localStorage:', error);
+        }
       }
 
     } catch (error) {
       console.error('Error in language detection:', error);
-      // Fallback to default language
+      // Fallback to default language on any error
       setLanguageState(defaultLanguage);
       globalLanguage = defaultLanguage;
     }
-  }, []);
+  }, [isClient]); // Only run when isClient changes
 
   // Set language with proper persistence
   const setLanguage = (newLanguage: Language) => {
+    console.log('Manually setting language to:', newLanguage);
     setLanguageState(newLanguage);
     notifyLanguageChange(newLanguage);
     
@@ -183,11 +203,13 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       path: '/',
     });
     
-    // Also store in localStorage
-    try {
-      localStorage.setItem('language', newLanguage);
-    } catch (error) {
-      console.error('Error setting language in localStorage:', error);
+    // Also store in localStorage (only on client side)
+    if (isClient) {
+      try {
+        localStorage.setItem('language', newLanguage);
+      } catch (error) {
+        console.error('Error setting language in localStorage:', error);
+      }
     }
   };
 
@@ -196,7 +218,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     const keys = key.split('.');
     
     // Navigate through the translations object
-    let translation: Record<string, any> = translations[language];
+    let translation: any = translations[language];
     
     for (const k of keys) {
       if (!translation || !translation[k]) {
