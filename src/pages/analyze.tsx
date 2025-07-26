@@ -38,7 +38,7 @@ export default function AnalyzePage() {
   const [mockAnalysisEnabled, setMockAnalysisEnabled] = useState(false)
   const [hasCredits, setHasCredits] = useState<boolean | null>(null)
   const [creditCheckComplete, setCreditCheckComplete] = useState(false)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  // Removed showPaymentModal - using simple warning instead
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function AnalyzePage() {
   }, [user]);
 
   const handleUploadStart = async () => {
-    // Always check credits in real-time before upload starts
+    // Double-check credit status before starting upload
     if (user) {
       try {
         const response = await fetch(`/api/payment/check-credits?user_id=${user.id}`);
@@ -134,14 +134,14 @@ export default function AnalyzePage() {
           const data = await response.json();
           if (!data.has_credits) {
             setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
-            setShowPaymentModal(true);
+            // Removed modal - error message displayed instead
             return;
           }
           setHasCredits(data.has_credits);
         } else if (response.status === 404) {
           // User not found in profiles table - treat as no credits
           setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
-          setShowPaymentModal(true);
+          // Removed modal - error message displayed instead
           return;
         } else {
           // Other errors - actual connection/server issues
@@ -178,14 +178,14 @@ export default function AnalyzePage() {
           const data = await response.json();
           if (!data.has_credits) {
             setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
-            setShowPaymentModal(true);
+            // Removed modal - error message displayed instead
             return;
           }
           setHasCredits(data.has_credits);
         } else if (response.status === 404) {
           // User not found in profiles table - treat as no credits
           setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
-          setShowPaymentModal(true);
+          // Removed modal - error message displayed instead
           return;
         } else {
           // Other errors - actual connection/server issues
@@ -198,7 +198,7 @@ export default function AnalyzePage() {
         return;
       }
     }
-    
+
     setIsAnalyzing(true)
     
     // Check if we have a file ID from the upload
@@ -216,124 +216,64 @@ export default function AnalyzePage() {
     
     // Check if this document already has analysis results
     const analysisResults = sessionStorage.getItem('analysisResults')
-    
-    if (analysisResults) {
-      console.log('Analysis results found in session storage')
-      
+    if (analysisResults && uploadStatus === 'idle') {
       try {
-        // Parse results to make sure they're valid
+        console.log('Found existing analysis results, using cached version')
         const parsedResults = JSON.parse(analysisResults)
-        
-        // Update document status and store results both locally and in Supabase
-        await storeAndUpdateResults(fileId, documentName, parsedResults, 'Analyzed')
-        
-        // Add a delay to show "Analysis complete" status before redirecting
-        setTimeout(() => {
-          setIsAnalyzing(false)
-          router.push(`/documents/${fileId}`)
-        }, 2000)
-        
+        setAnalysisResults(parsedResults)
+        setUploadStatus('complete')
+        setIsAnalyzing(false)
         return
-      } catch (error: any) {
-        console.error('Error parsing analysis results:', error)
-        // Continue with analysis if parsing fails
+      } catch (error) {
+        console.error('Error parsing cached analysis results:', error)
+        sessionStorage.removeItem('analysisResults')
       }
     }
-    
-    // If we don't have analysis results, request them from the server
-    if (!needsClientProcessing) {
-      try {
-        // Check credits FIRST before starting any analysis UI or processing
-        if (user) {
-          try {
-            const useCreditsResponse = await fetch('/api/payment/use-credit', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ 
-                user_id: user.id,
-                document_id: fileId
-              }),
-            });
-            
-            if (!useCreditsResponse.ok) {
-              const errorData = await useCreditsResponse.json();
-              if (errorData.error === 'No credits remaining') {
-                setIsAnalyzing(false);
-                setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
-                setShowPaymentModal(true);
-                return;
-              }
-              // For ANY credit error, stop the analysis - don't allow free analysis
-              console.error('Credit validation failed:', errorData.error);
-              setIsAnalyzing(false);
-              setErrorMessage('Unable to validate credits. Please try again or contact support.');
-              return;
-            }
-          } catch (error) {
-            console.error('Error using credit:', error);
-            // Don't continue with analysis if credit check fails
-            setIsAnalyzing(false);
-            setErrorMessage('Unable to validate credits. Please check your connection and try again.');
-            return;
-          }
+
+    try {
+      // Make the API call to analyze the document
+      console.log(`Starting analysis for document: ${documentName}`)
+      const response = await fetch('/api/analyze-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileId: fileId,
+          user_id: user?.id,
+          document_name: documentName
+        }),
+      })
+
+      const result = await response.json()
+      console.log('Analysis API response:', result)
+
+      if (!response.ok) {
+        if (result.error === 'No credits remaining') {
+          setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
+          // Removed modal - error message displayed instead
+          return;
         }
-        
-        console.log('Requesting document analysis from server...')
-        
-        // Now update status to Processing (AFTER credit check passes)
-        if (user) {
-          await updateSupabaseDocumentStatus(user.id, fileId, 'Processing')
-        }
-        updateLocalDocumentStatus(fileId, 'Processing')
-        
-        // If we reach here, we need to make an API call to analyze the document
-        const response = await fetch('/api/analyze-document', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ fileId }),
-        })
-        
-        if (!response.ok) {
-          throw new Error(`Server returned ${response.status}: ${response.statusText}`)
-        }
-        
-        const data = await response.json()
-        
-        if (data.success && data.analysis) {
-          console.log('Analysis completed successfully')
-          
-          // Store the analysis results both locally and in Supabase
-          await storeAndUpdateResults(fileId, documentName, data.analysis, 'Analyzed')
-          
-          // Double-check that the analysis was stored properly
-          setTimeout(() => {
-            const storedAnalysis = localStorage.getItem(`analysis-${fileId}`)
-            if (!storedAnalysis) {
-              console.warn('Analysis results not properly stored in localStorage, retrying...')
-              storeLocalAnalysisResults(fileId, data.analysis)
-            }
-          }, 500)
-          
-          // Redirect to the document details page
-          setTimeout(() => {
-            setIsAnalyzing(false)
-            router.push(`/documents/${fileId}`)
-          }, 1500)
-        } else {
-          throw new Error(data.error || 'Unknown error during analysis')
-        }
-      } catch (error) {
-        console.error('Error during document analysis:', error);
-        setIsAnalyzing(false);
-        setErrorMessage(`Failed to analyze document: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        
-        // Even if analysis fails, keep the document with "Error" status
-        await storeAndUpdateResults(fileId, documentName, { error: 'Analysis failed' }, 'Error')
+        throw new Error(result.error || `HTTP error! status: ${response.status}`)
       }
+
+      if (result.success && result.analysis) {
+        // Store results in session storage for future use
+        sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
+        
+        // Set the analysis results
+        setAnalysisResults(result.analysis)
+        setUploadStatus('complete')
+        console.log('Analysis completed successfully')
+      } else {
+        throw new Error('Invalid response format from analysis API')
+      }
+    } catch (error: any) {
+      console.error('Error during analysis:', error)
+      setErrorMessage(error.message || 'Failed to analyze document. Please try again.')
+      setUploadStatus('error')
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
@@ -360,16 +300,10 @@ export default function AnalyzePage() {
   }
 
   const handleError = (errorMessage: string) => {
-    setIsUploading(false)
     setErrorMessage(errorMessage)
-    
-    // Check if error indicates scanned document
-    if (errorMessage.includes('minimal text') || 
-        errorMessage.includes('scanned') || 
-        errorMessage.includes('No text could be extracted')) {
-      // Document might be scanned, let's try client-side processing
-      setNeedsClientProcessing(true)
-    }
+    setUploadStatus('error')
+    setIsUploading(false)
+    setIsAnalyzing(false)
   }
 
   const handleUploadedFile = (file: File) => {
@@ -411,7 +345,8 @@ export default function AnalyzePage() {
           if (!useCreditsResponse.ok) {
             const errorData = await useCreditsResponse.json();
             if (errorData.error === 'No credits remaining') {
-              setShowPaymentModal(true);
+              setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents.');
+              // Removed modal - error message displayed instead
               return;
             }
             // For ANY credit error, stop the analysis - don't allow free analysis
@@ -431,51 +366,44 @@ export default function AnalyzePage() {
       setIsAnalyzing(true)
       
       try {
-        // Add document to localStorage with Processing status
-        addDocument(tempId, documentName, 'Processing')
+        console.log('Starting analysis for scanned document with extracted text')
         
-        // Update status in Supabase as well if user is authenticated
-        if (user) {
-          await updateSupabaseDocumentStatus(user.id, tempId, 'Processing')
-        }
-        
-        // Submit the extracted text to the server for analysis
-        const response = await fetch('/api/analyze-document', {
+        const response = await fetch('/api/analyze-text', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            text,
-            fileName: documentName
+            text: text,
+            document_name: documentName,
+            user_id: user?.id
           }),
         })
-        
+
+        const result = await response.json()
+        console.log('Text analysis API response:', result)
+
         if (!response.ok) {
-          throw new Error(`Server returned ${response.status}: ${response.statusText}`)
+          throw new Error(result.error || `HTTP error! status: ${response.status}`)
         }
-        
-        const data = await response.json()
-        
-        if (data.success) {
-          // Store the document ID in session storage
-          sessionStorage.setItem('fileId', tempId)
+
+        if (result.success && result.analysis) {
+          // Store results in session storage
+          sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
           
-          // Store analysis results both locally and in Supabase
-          await storeAndUpdateResults(tempId, documentName, data.analysis, 'Analyzed')
-          
-          // Redirect to results
-          setTimeout(() => {
-            setIsAnalyzing(false)
-            router.push(`/documents/${tempId}`)
-          }, 1500)
+          // Set the analysis results
+          setAnalysisResults(result.analysis)
+          setUploadStatus('complete')
+          console.log('Text analysis completed successfully')
         } else {
-          throw new Error(data.error || 'Error analyzing document')
+          throw new Error('Invalid response format from text analysis API')
         }
-      } catch (err: any) {
-        console.error('Error analyzing extracted text:', err)
+      } catch (error: any) {  
+        console.error('Error during text analysis:', error)
+        setErrorMessage(error.message || 'Failed to analyze document text. Please try again.')
+        setUploadStatus('error')
+      } finally {
         setIsAnalyzing(false)
-        setErrorMessage(`Error analyzing document: ${err.message || 'Unknown error'}`)
       }
     }
   }
@@ -494,56 +422,12 @@ export default function AnalyzePage() {
   }
 
   // Function to handle pay-per-document purchase
-  const handlePayPerDocument = async () => {
-    // Use the Paddle provider instead of direct initialization
-    const openCheckout = () => {
-    if (!user) return;
-    
-      // @ts-ignore - Paddle is loaded via PaddleProvider
-      if (window.Paddle) {
-    window.Paddle.Checkout.open({
-          product: process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT || 'PAY_PER_DOCUMENT',
-      email: user.email,
-      successCallback: (data: any) => {
-        // Handle successful purchase
-        console.log('Purchase successful', data);
-        // Call API to record the purchase
-        fetch('/api/payment/pay-per-document', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            checkout_id: data.checkout.id,
-            user_id: user.id,
-          }),
-        }).then(() => {
-          // Refresh credit status
-          setHasCredits(true);
-          setShowPaymentModal(false);
-        });
-      }
-    });
-      } else {
-        console.error('Paddle is not loaded yet');
-        setErrorMessage('Payment system is loading, please try again in a moment.');
-      }
-    };
-
-    // Try to open checkout directly if Paddle is already loaded
-    if (window.Paddle) {
-      openCheckout();
-    } else {
-      // Wait a bit for Paddle to load
-      setTimeout(() => {
-        if (window.Paddle) {
-          openCheckout();
-        } else {
-          setErrorMessage('Payment system failed to load. Please refresh the page and try again.');
-        }
-      }, 2000);
-    }
-  };
+  const handlePayPerDocument = () => {
+    // Redirect to checkout with single document price
+    const url = `/checkout?priceId=${process.env.NEXT_PUBLIC_PADDLE_PAY_PER_DOCUMENT}&successUrl=${encodeURIComponent(window.location.href)}`
+    window.location.href = url
+    // Removed modal close - no modal anymore
+  }
 
   // Show loading screen while checking authentication status
   if (isLoading) {
@@ -559,45 +443,7 @@ export default function AnalyzePage() {
     return null
   }
 
-  // Payment modal for when user has no credits
-  const PaymentModal = () => {
-    // Debug translation issues
-    console.log('PaymentModal debug:', {
-      needCreditsTitle: t('common.needCreditsTitle'),
-      needCreditsMessage: t('common.needCreditsMessage'),
-      payForAnalysis: t('common.payForAnalysis'),
-      viewPricingPlans: t('common.viewPricingPlans'),
-      cancel: t('common.cancel')
-    });
-
-    return (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-4">{t('common.needCreditsTitle')}</h2>
-          <p className="mb-6">
-            {t('common.needCreditsMessage')}
-          </p>
-          <div className="flex flex-col space-y-3">
-            <button
-              onClick={handlePayPerDocument}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-            >
-              {t('common.payForAnalysis')}
-            </button>
-            <Link href="/pricing" className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-center hover:bg-gray-300">
-              {t('common.viewPricingPlans')}
-            </Link>
-            <button 
-              onClick={() => setShowPaymentModal(false)}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Removed PaymentModal component - using simple warning instead
 
   return (
     <>
@@ -605,7 +451,7 @@ export default function AnalyzePage() {
         <title>{t('analyze.title')} | LegalHelper</title>
       </Head>
 
-      {showPaymentModal && <PaymentModal />}
+      {/* Removed payment modal - using simple warning instead */}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="text-center mb-8">
@@ -619,9 +465,36 @@ export default function AnalyzePage() {
 
         {isAuthenticated && creditCheckComplete && (
           <div className="mb-6">
-            <CreditStatus 
-              onNoCredits={() => setShowPaymentModal(true)}
-            />
+            <CreditStatus />
+            {hasCredits === false && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-medium text-red-800">No Analysis Credits Available</h3>
+                    <p className="text-sm text-red-700 mt-1">
+                      You don't have any credits remaining to analyze documents. Purchase credits to continue.
+                    </p>
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                      <button
+                        onClick={handlePayPerDocument}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Buy Single Analysis ($1.50)
+                      </button>
+                      <Link
+                        href="/pricing"
+                        className="inline-flex items-center px-3 py-2 border border-red-300 text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        View All Plans
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -635,7 +508,7 @@ export default function AnalyzePage() {
               onFileSelected={(file, startUpload) => {
                 // Check credits before allowing file upload
                 if (hasCredits === false) {
-                  setShowPaymentModal(true);
+                  setErrorMessage('You don\'t have any credits remaining. Please purchase credits to analyze documents or visit our pricing page.');
                   return;
                 }
                 // Store file info first
@@ -643,7 +516,7 @@ export default function AnalyzePage() {
                 // Then start the upload process
                 startUpload();
               }}
-              disabled={showPaymentModal}
+              disabled={hasCredits === false}
             />
           </div>
         )}
