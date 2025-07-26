@@ -560,33 +560,44 @@ export default function AnalyzePage() {
   }
 
   // Payment modal for when user has no credits
-  const PaymentModal = () => (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4">{t('common.needCreditsTitle')}</h2>
-        <p className="mb-6">
-          {t('common.needCreditsMessage')}
-        </p>
-        <div className="flex flex-col space-y-3">
-          <button
-            onClick={handlePayPerDocument}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          >
-            {t('common.payForAnalysis')}
-          </button>
-          <Link href="/pricing" className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-center hover:bg-gray-300">
-            {t('common.viewPricingPlans')}
-          </Link>
-          <button 
-            onClick={() => setShowPaymentModal(false)}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            {t('common.cancel')}
-          </button>
+  const PaymentModal = () => {
+    // Debug translation issues
+    console.log('PaymentModal debug:', {
+      needCreditsTitle: t('common.needCreditsTitle'),
+      needCreditsMessage: t('common.needCreditsMessage'),
+      payForAnalysis: t('common.payForAnalysis'),
+      viewPricingPlans: t('common.viewPricingPlans'),
+      cancel: t('common.cancel')
+    });
+
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-4">{t('common.needCreditsTitle')}</h2>
+          <p className="mb-6">
+            {t('common.needCreditsMessage')}
+          </p>
+          <div className="flex flex-col space-y-3">
+            <button
+              onClick={handlePayPerDocument}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              {t('common.payForAnalysis')}
+            </button>
+            <Link href="/pricing" className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md text-center hover:bg-gray-300">
+              {t('common.viewPricingPlans')}
+            </Link>
+            <button 
+              onClick={() => setShowPaymentModal(false)}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              {t('common.cancel')}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>

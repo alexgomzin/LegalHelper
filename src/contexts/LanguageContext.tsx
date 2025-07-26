@@ -217,12 +217,24 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     // Split key by dots to navigate through the translations object
     const keys = key.split('.');
     
+    // Debug translation issues for common keys
+    if (key.startsWith('common.')) {
+      console.log('Translation debug:', {
+        key,
+        currentLanguage: language,
+        keys,
+        hasLanguageInTranslations: !!translations[language],
+        hasCommonSection: !!(translations[language] && translations[language].common)
+      });
+    }
+    
     // Navigate through the translations object
     let translation: any = translations[language];
     
     for (const k of keys) {
       if (!translation || !translation[k]) {
         // If translation not found, return the key
+        console.log(`Translation not found for: ${key} at step: ${k}, current language: ${language}`);
         return key;
       }
       translation = translation[k];
