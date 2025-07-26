@@ -523,30 +523,30 @@ export default function Checkout() {
 
             {/* Customer Details (visible only in development) */}
             {showDebugDetails && (
-              <div className="border border-gray-200 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Customer Details</h3>
-                <p className="text-gray-600">
-                  <strong>Email:</strong> {customerEmail || 'Not provided'}
-                </p>
-                <p className="text-gray-600 text-sm mt-1">
-                  <strong>Price ID:</strong> <code className="bg-gray-100 px-1 rounded">{priceId}</code>
-                </p>
-                
-                {/* Paddle Status */}
-                <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
-                  <p className="font-medium text-gray-700 mb-2">Payment System Status:</p>
-                  <div className="space-y-1 text-gray-600">
-                    <p>Environment: <span className="font-mono">{process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'not set'}</span></p>
-                    <p>Client Token: <span className={process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? 'text-green-600' : 'text-red-600'}>
-                      {process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? '✓ Configured' : '✗ Missing'}
-                    </span></p>
-                    <p>Paddle.js: <span className={paddleLoaded ? 'text-green-600' : 'text-yellow-600'}>
-                      {paddleLoaded ? '✓ Loaded' : '⏳ Loading...'}
-                    </span></p>
-                    <p>Fallback API: <span className="text-green-600">✓ Available</span></p>
-                  </div>
+            <div className="border border-gray-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Customer Details</h3>
+              <p className="text-gray-600">
+                <strong>Email:</strong> {customerEmail || 'Not provided'}
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                <strong>Price ID:</strong> <code className="bg-gray-100 px-1 rounded">{priceId}</code>
+              </p>
+              
+              {/* Paddle Status */}
+              <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
+                <p className="font-medium text-gray-700 mb-2">Payment System Status:</p>
+                <div className="space-y-1 text-gray-600">
+                  <p>Environment: <span className="font-mono">{process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || 'not set'}</span></p>
+                  <p>Client Token: <span className={process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? 'text-green-600' : 'text-red-600'}>
+                    {process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ? '✓ Configured' : '✗ Missing'}
+                  </span></p>
+                  <p>Paddle.js: <span className={paddleLoaded ? 'text-green-600' : 'text-yellow-600'}>
+                    {paddleLoaded ? '✓ Loaded' : '⏳ Loading...'}
+                  </span></p>
+                  <p>Fallback API: <span className="text-green-600">✓ Available</span></p>
                 </div>
               </div>
+            </div>
             )}
 
             {/* Error Display */}

@@ -145,7 +145,7 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
       } catch (error: unknown) {
         console.log('localStorage not available');
       }
-
+      
       // If user has saved preference, use it (highest priority)
       if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ru' || savedLanguage === 'de' || savedLanguage === 'es' || savedLanguage === 'tr')) {
         console.log('Using saved language from cookies:', savedLanguage);
@@ -205,10 +205,10 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
     
     // Also store in localStorage (only on client side)
     if (isClient) {
-      try {
-        localStorage.setItem('language', newLanguage);
-      } catch (error) {
-        console.error('Error setting language in localStorage:', error);
+    try {
+      localStorage.setItem('language', newLanguage);
+    } catch (error) {
+      console.error('Error setting language in localStorage:', error);
       }
     }
   };

@@ -621,8 +621,18 @@ export default function AnalyzePage() {
               onUploadProgress={handleUploadProgress}
               onUploadComplete={handleUploadComplete}
               onError={handleError}
-              onFileSelected={handleUploadedFile}
-              disabled={hasCredits === false || showPaymentModal}
+              onFileSelected={(file, startUpload) => {
+                // Check credits before allowing file upload
+                if (hasCredits === false) {
+                  setShowPaymentModal(true);
+                  return;
+                }
+                // Store file info first
+                handleUploadedFile(file);
+                // Then start the upload process
+                startUpload();
+              }}
+              disabled={showPaymentModal}
             />
           </div>
         )}

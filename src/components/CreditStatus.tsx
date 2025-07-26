@@ -39,10 +39,7 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
             isSubscribed: data.subscription_tier === 'subscription'
           });
           
-          // Call onNoCredits if provided and user has no credits
-          if (onNoCredits && data.credits_remaining === 0 && data.subscription_tier !== 'subscription') {
-            onNoCredits();
-          }
+          // Remove automatic onNoCredits trigger - only show modal when user tries to upload
         } else {
           // Default to free tier if API fails
           setStatus({

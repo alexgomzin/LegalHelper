@@ -10,7 +10,7 @@ interface DocumentUploaderProps {
   onUploadProgress: (percent: number) => void
   onUploadComplete: () => void
   onError: (errorMessage: string) => void
-  onFileSelected?: (file: File) => void
+  onFileSelected?: (file: File, startUpload: () => void) => void
   disabled?: boolean
 }
 
@@ -44,7 +44,7 @@ export default function DocumentUploader({
     
     const files = e.dataTransfer.files
     if (files.length) {
-      handleFileUpload(files[0])
+      handleFileSelection(files[0])
     }
   }
 
@@ -52,8 +52,20 @@ export default function DocumentUploader({
     if (disabled) return;
     
     if (e.target.files && e.target.files.length > 0) {
-      handleFileUpload(e.target.files[0])
+      handleFileSelection(e.target.files[0])
     }
+  }
+
+  const handleFileSelection = (file: File) => {
+    // Notify about file selection first - this allows parent to check credits
+    if (onFileSelected) {
+      onFileSelected(file, () => handleFileUpload(file));
+      // Parent component will call startUpload if credits are available
+      return;
+    }
+    
+    // Fallback: if no onFileSelected callback, proceed with upload
+    handleFileUpload(file);
   }
 
   const handleFileUpload = async (file: File) => {
@@ -69,10 +81,8 @@ export default function DocumentUploader({
       return
     }
     
-    // Notify about file selection if callback provided
-    if (onFileSelected) {
-      onFileSelected(file);
-    }
+    // Note: onFileSelected is handled in handleFileSelection, not here
+    // This function is called directly only when credits are already verified
     
     onUploadStart()
     console.log('Starting file upload for:', file.name)
