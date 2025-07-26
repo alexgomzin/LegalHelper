@@ -12,66 +12,89 @@ export default function ConfirmEmail() {
   const router = useRouter()
 
   useEffect(() => {
+    let authListener: any = null
+
     const handleEmailConfirmation = async () => {
       try {
-        // Get the hash from the URL
-        const hashParams = new URLSearchParams(window.location.hash.substring(1))
-        const accessToken = hashParams.get('access_token')
-        const refreshToken = hashParams.get('refresh_token')
-        const type = hashParams.get('type')
+        // Modern approach: Listen for auth state changes
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_IN' && session) {
+            // User successfully confirmed their email and is now signed in
+            console.log('User confirmed email and signed in:', session.user)
+            
+            // Check if user profile exists, if not create it
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
 
-        if (!accessToken || !refreshToken || type !== 'signup') {
-          setStatus('error')
-          setMessage('Invalid confirmation link. Please try registering again.')
-          return
-        }
+            if (profileError && profileError.code === 'PGRST116') {
+              // Profile doesn't exist, create it
+              const { error: createError } = await supabase.from('profiles').insert({
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || '',
+                credits_remaining: 1, // Give 1 free credit
+                subscription_tier: 'free',
+                subscription_status: 'active',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              })
 
-        // Set the session with the tokens from the URL
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        })
+              if (createError) {
+                console.error('Error creating profile:', createError)
+              }
+            }
 
-        if (error) {
-          console.error('Error confirming email:', error)
-          setStatus('error')
-          setMessage('Failed to confirm email. Please try again or contact support.')
-          return
-        }
-
-        if (data.user) {
-          // Check if user profile exists, if not create it
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single()
-
-          if (profileError && profileError.code === 'PGRST116') {
-            // Profile doesn't exist, create it
-            const { error: createError } = await supabase.from('profiles').insert({
-              id: data.user.id,
-              email: data.user.email,
-              name: data.user.user_metadata?.name || '',
-              credits_remaining: 1, // Give 1 free credit
-              subscription_tier: 'free',
-              subscription_status: 'active',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-
-            if (createError) {
-              console.error('Error creating profile:', createError)
+            setStatus('success')
+            setMessage('Email confirmed successfully! You are now logged in.')
+            
+            // Redirect to dashboard after 3 seconds
+            setTimeout(() => {
+              router.push('/dashboard?confirmed=true')
+            }, 3000)
+          } else if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+            // Check if we're already signed in
+            if (session?.user) {
+              setStatus('success')
+              setMessage('Email already confirmed! You are logged in.')
+              setTimeout(() => {
+                router.push('/dashboard')
+              }, 2000)
             }
           }
+        })
 
+        authListener = data
+
+        // Also check current session immediately
+        const { data: currentSession } = await supabase.auth.getSession()
+        if (currentSession.session?.user) {
           setStatus('success')
-          setMessage('Email confirmed successfully! You can now log in.')
-          
-          // Redirect to login page after 3 seconds
+          setMessage('Email already confirmed! You are logged in.')
           setTimeout(() => {
-            router.push('/login?confirmed=true')
-          }, 3000)
+            router.push('/dashboard')
+          }, 2000)
+          return
+        }
+
+        // Check if there are URL parameters (for email confirmation)
+        const urlParams = new URLSearchParams(window.location.search)
+        const token = urlParams.get('token')
+        const type = urlParams.get('type')
+        
+        if (type === 'signup' && token) {
+          // This handles the email confirmation
+          // Supabase will automatically handle the token and sign the user in
+          // The onAuthStateChange listener above will catch the SIGNED_IN event
+          console.log('Processing email confirmation token...')
+        } else {
+          // No confirmation parameters found, check if user needs to confirm
+          setTimeout(() => {
+            setStatus('error')
+            setMessage('Invalid confirmation link. Please check your email for the correct link or try registering again.')
+          }, 5000) // Give some time for auth state to change
         }
       } catch (error) {
         console.error('Error during email confirmation:', error)
@@ -83,6 +106,13 @@ export default function ConfirmEmail() {
     // Only run on client side
     if (typeof window !== 'undefined') {
       handleEmailConfirmation()
+    }
+
+    // Cleanup function
+    return () => {
+      if (authListener) {
+        authListener.subscription.unsubscribe()
+      }
     }
   }, [router])
 
