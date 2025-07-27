@@ -102,9 +102,9 @@ const translations = {
         starterPack: 'Starter Pack',
         professionalPack: 'Professional Pack',
         businessPack: 'Business Pack',
-        analysesEach: 'analyses • $0.90 each',
-        save11Percent: 'analyses • $0.80 each • SAVE 11%',
-        save17Percent: 'analyses • $0.75 each • SAVE 17%',
+        analysesEach: 'analyses • $1.10 each',
+        save11Percent: 'analyses • $0.80 each • SAVE 47%',
+        save17Percent: 'analyses • $0.75 each • SAVE 50%',
         creditsNeverExpire: '✓ Credits never expire • ✓ All analysis features included',
         
         // Buttons
@@ -533,9 +533,9 @@ const translations = {
         starterPack: 'Стартовый пакет',
         professionalPack: 'Профессиональный пакет',
         businessPack: 'Бизнес пакет',
-        analysesEach: 'анализов • $0.90 каждый',
-        save11Percent: 'анализов • $0.80 каждый • ЭКОНОМИЯ 11%',
-        save17Percent: 'анализов • $0.75 каждый • ЭКОНОМИЯ 17%',
+        analysesEach: 'анализов • $1.10 каждый',
+        save11Percent: 'анализов • $0.80 каждый • ЭКОНОМИЯ 47%',
+        save17Percent: 'анализов • $0.75 каждый • ЭКОНОМИЯ 50%',
         creditsNeverExpire: '✓ Кредиты никогда не истекают • ✓ Все функции анализа включены',
         
         // Buttons
@@ -964,9 +964,9 @@ const translations = {
         starterPack: 'Starter-Paket',
         professionalPack: 'Professional-Paket',
         businessPack: 'Business-Paket',
-        analysesEach: 'Analysen • $0.90 jeweils',
-        save11Percent: 'Analysen • $0.80 jeweils • SPAREN SIE 11%',
-        save17Percent: 'Analysen • $0.75 jeweils • SPAREN SIE 17%',
+        analysesEach: 'Analysen • $1.10 jeweils',
+        save11Percent: 'Analysen • $0.80 jeweils • SPAREN SIE 47%',
+        save17Percent: 'Analysen • $0.75 jeweils • SPAREN SIE 50%',
         creditsNeverExpire: '✓ Credits laufen nie ab • ✓ Alle Analysefunktionen enthalten',
         
         // Buttons
@@ -1395,9 +1395,9 @@ const translations = {
         starterPack: 'Paquete inicial',
         professionalPack: 'Paquete profesional',
         businessPack: 'Paquete empresarial',
-        analysesEach: 'análisis • $0.90 cada uno',
-        save11Percent: 'análisis • $0.80 cada uno • AHORRE 11%',
-        save17Percent: 'análisis • $0.75 cada uno • AHORRE 17%',
+        analysesEach: 'análisis • $1.10 cada uno',
+        save11Percent: 'análisis • $0.80 cada uno • AHORRE 47%',
+        save17Percent: 'análisis • $0.75 cada uno • AHORRE 50%',
         creditsNeverExpire: '✓ Los créditos nunca expiran • ✓ Todas las funciones de análisis incluidas',
         
         // Buttons
@@ -1826,9 +1826,9 @@ const translations = {
         starterPack: 'Başlangıç paketi',
         professionalPack: 'Profesyonel paket',
         businessPack: 'İş paketi',
-        analysesEach: 'analiz • Her biri $0.90',
-        save11Percent: 'analiz • Her biri $0.80 • %11 TASARRUF',
-        save17Percent: 'analiz • Her biri $0.75 • %17 TASARRUF',
+        analysesEach: 'analiz • Her biri $1.10',
+        save11Percent: 'analiz • Her biri $0.80 • %47 TASARRUF',
+        save17Percent: 'analiz • Her biri $0.75 • %50 TASARRUF',
         creditsNeverExpire: '✓ Krediler asla sona ermez • ✓ Tüm analiz özellikleri dahil',
         
         // Buttons

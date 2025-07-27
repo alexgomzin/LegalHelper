@@ -65,7 +65,7 @@ export default function Pricing() {
       features: [
         `5 ${t('common.subscriptionPage.analysesEach')}`,
         `15 ${t('common.subscriptionPage.save11Percent')}`,
-        t('common.subscriptionPage.oneTimePurchase'),
+        `30 ${t('common.subscriptionPage.save17Percent')}`,
         t('common.subscriptionPage.creditsNeverExpire'),
         t('common.subscriptionPage.allAnalysisFeatures')
       ],
