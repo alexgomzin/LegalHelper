@@ -166,9 +166,24 @@ export default function Pricing() {
                 )}
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900">{tier.name}</h3>
-                  <p className="mt-4 flex items-baseline">
-                    <span className="text-4xl font-extrabold text-gray-900">{tier.price}</span>
-                  </p>
+                  {tier.id === 'subscription' ? (
+                    <div className="mt-4">
+                      <div className="flex items-baseline space-x-2">
+                        <span className="text-2xl font-medium text-gray-400 line-through">$40.00</span>
+                        <span className="text-4xl font-extrabold text-green-600">{tier.price}</span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          25% OFF
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm text-green-600 font-medium">
+                        🎉 Limited Time Discount - Save $10/month!
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-4 flex items-baseline">
+                      <span className="text-4xl font-extrabold text-gray-900">{tier.price}</span>
+                    </p>
+                  )}
                   <p className="mt-6 text-gray-500">{tier.description}</p>
                   
                   <ul role="list" className="mt-6 space-y-3">
