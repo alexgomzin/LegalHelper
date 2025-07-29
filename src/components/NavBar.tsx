@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useTranslation } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/SupabaseAuthContext'
 import LanguageSwitcher from './LanguageSwitcher'
+import { trackSignUpClick } from '@/utils/gtag'
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -123,6 +124,7 @@ const NavBar = () => {
                   <Link
                     href="/register"
                     className="ml-2 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                    onClick={trackSignUpClick}
                   >
                     {t('common.signup')}
                   </Link>
@@ -232,7 +234,10 @@ const NavBar = () => {
               <Link
                 href="/register"
                 className="block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false)
+                  trackSignUpClick()
+                }}
               >
                 {t('common.signup')}
               </Link>

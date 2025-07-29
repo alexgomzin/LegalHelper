@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import axios from 'axios'
 import { addDocument } from '@/utils/documentUtils'
 import { useTranslation } from '@/contexts/LanguageContext'
+import { trackPdfSelectClick } from '@/utils/gtag'
 
 interface DocumentUploaderProps {
   onUploadStart: () => void
@@ -50,6 +51,9 @@ export default function DocumentUploader({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
+    
+    // Track the PDF selection event
+    trackPdfSelectClick();
     
     if (e.target.files && e.target.files.length > 0) {
       handleFileSelection(e.target.files[0])
@@ -168,7 +172,10 @@ export default function DocumentUploader({
         onDragOver={disabled ? undefined : handleDragOver}
         onDragLeave={disabled ? undefined : handleDragLeave}
         onDrop={disabled ? undefined : handleDrop}
-        onClick={disabled ? undefined : () => fileInputRef.current?.click()}
+        onClick={disabled ? undefined : () => {
+          trackPdfSelectClick();
+          fileInputRef.current?.click();
+        }}
       >
         <input
           type="file"

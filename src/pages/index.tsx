@@ -4,7 +4,8 @@ import { useTranslation } from '@/contexts/LanguageContext'
 import Link from 'next/link'
 import Head from 'next/head'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { trackGetStartedClick } from '@/utils/gtag'
 
 export default function Home() {
   const { t } = useTranslation()
@@ -35,7 +36,7 @@ export default function Home() {
                 {t('home.subtitle')}
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href="/analyze" className="px-8 py-4 bg-white text-blue-700 font-semibold rounded-md shadow-lg hover:bg-blue-50 transition-colors">
+                <Link href="/analyze" className="px-8 py-4 bg-white text-blue-700 font-semibold rounded-md shadow-lg hover:bg-blue-50 transition-colors" onClick={trackGetStartedClick}>
                   {t('home.getStarted')}
                 </Link>
               </div>
@@ -240,7 +241,7 @@ export default function Home() {
           </div>
           
           <div className="text-center mt-12">
-            <Link href="/analyze" className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition-colors">
+            <Link href="/analyze" className="px-8 py-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition-colors" onClick={trackGetStartedClick}>
               {t('home.tryNow')}
             </Link>
           </div>
@@ -255,7 +256,7 @@ export default function Home() {
             {t('home.ctaDesc')}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/analyze" className="px-8 py-4 bg-white text-blue-700 font-semibold rounded-md shadow-lg hover:bg-blue-50 transition-colors">
+            <Link href="/analyze" className="px-8 py-4 bg-white text-blue-700 font-semibold rounded-md shadow-lg hover:bg-blue-50 transition-colors" onClick={trackGetStartedClick}>
               {t('home.startFreeAnalysis')}
             </Link>
             <Link href="/how-it-works" className="px-8 py-4 bg-transparent border-2 border-white text-white font-medium rounded-md hover:bg-white/10 transition-colors">
