@@ -11,7 +11,7 @@ export const trackEvent = (action: string, category?: string, label?: string, va
   }
 }
 
-// Track conversion events
+// Track conversion events (for GA4 conversions)
 export const trackConversion = (conversionName: string, additionalParams?: Record<string, any>) => {
   if (typeof window !== 'undefined' && (window as any).gtag) {
     (window as any).gtag('event', 'conversion', {
@@ -23,7 +23,7 @@ export const trackConversion = (conversionName: string, additionalParams?: Recor
   }
 }
 
-// Specific conversion tracking functions
+// Current approach - Conversion tracking functions
 export const trackGetStartedClick = () => {
   trackConversion('get_started_click', {
     event_category: 'user_engagement',
@@ -43,6 +43,34 @@ export const trackPdfSelectClick = () => {
     event_category: 'user_engagement',
     event_label: 'select_pdf_button'
   })
+}
+
+// Alternative approach - Custom event tracking (ChatGPT style)
+export const trackGetStartedEvent = () => {
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', 'get_started_clicked', {
+      event_category: 'engagement',
+      event_label: 'home_page',
+    })
+  }
+}
+
+export const trackSignUpEvent = () => {
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', 'sign_up_clicked', {
+      event_category: 'engagement',
+      event_label: 'navigation',
+    })
+  }
+}
+
+export const trackPdfSelectEvent = () => {
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', 'pdf_select_clicked', {
+      event_category: 'engagement',
+      event_label: 'document_upload',
+    })
+  }
 }
 
 // Track page views
