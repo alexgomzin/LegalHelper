@@ -195,8 +195,8 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold mb-4">What Our Clients Say</h2>
-            <p className="text-xl text-gray-600">Join thousands of satisfied legal professionals who trust our AI-powered analysis</p>
+            <h2 className="text-3xl font-bold mb-4">{t('home.customerReviewsTitle')}</h2>
+            <p className="text-xl text-gray-600">{t('home.customerReviewsSubtitle')}</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -209,14 +209,14 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-600 mb-6">"This tool saved me hours of contract review. Found critical issues I would have missed. Absolutely game-changing for my practice."</p>
+              <p className="text-gray-600 mb-6">"{t('home.review1Text')}"</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-blue-600 font-semibold">SM</span>
                 </div>
                 <div className="ml-4">
-                  <div className="font-semibold">Sarah Martinez</div>
-                  <div className="text-sm text-gray-500">Corporate Attorney, BigLaw Firm</div>
+                  <div className="font-semibold">{t('home.review1Name')}</div>
+                  <div className="text-sm text-gray-500">{t('home.review1Title')}</div>
                 </div>
               </div>
             </div>
@@ -230,14 +230,14 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-600 mb-6">"Finally, affordable legal tech that actually works. The AI caught liability issues that could have cost us millions. Worth every penny."</p>
+              <p className="text-gray-600 mb-6">"{t('home.review2Text')}"</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                   <span className="text-green-600 font-semibold">DK</span>
                 </div>
                 <div className="ml-4">
-                  <div className="font-semibold">David Kim</div>
-                  <div className="text-sm text-gray-500">General Counsel, Tech Startup</div>
+                  <div className="font-semibold">{t('home.review2Name')}</div>
+                  <div className="text-sm text-gray-500">{t('home.review2Title')}</div>
                 </div>
               </div>
             </div>
@@ -251,14 +251,14 @@ export default function Home() {
                   </svg>
                 ))}
               </div>
-              <p className="text-gray-600 mb-6">"As a solo practitioner, this levels the playing field. I can now offer enterprise-level contract analysis to my small business clients."</p>
+              <p className="text-gray-600 mb-6">"{t('home.review3Text')}"</p>
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                   <span className="text-purple-600 font-semibold">LR</span>
                 </div>
                 <div className="ml-4">
-                  <div className="font-semibold">Lisa Rodriguez</div>
-                  <div className="text-sm text-gray-500">Solo Practitioner</div>
+                  <div className="font-semibold">{t('home.review3Name')}</div>
+                  <div className="text-sm text-gray-500">{t('home.review3Title')}</div>
                 </div>
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <span className="text-green-800 font-semibold">Join 2,000+ satisfied customers</span>
+              <span className="text-green-800 font-semibold">{t('home.satisfiedCustomers')}</span>
             </div>
           </div>
         </div>
