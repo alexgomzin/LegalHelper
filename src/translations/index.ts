@@ -176,9 +176,9 @@ const translations = {
       }
     },
     home: {
-      title: 'Don\'t pay a lawyer. Download the contract and the AI will find the weak points',
+      title: 'Legal Document Analysis',
       subtitle: 'Upload your legal documents for AI-powered risk analysis and summarization',
-      getStarted: 'Start Analysis',
+      getStarted: 'Get Started',
       features: 'Features',
       featuresDescription: 'Our AI-powered platform transforms how legal professionals review and analyze contracts',
       riskAnalysis: 'Risk Analysis',
@@ -215,18 +215,7 @@ const translations = {
       accuracyRate: 'Accuracy Rate',
       fasterAnalysis: 'Faster Analysis',
       documentsAnalyzed: 'Documents Analyzed',
-      alwaysAvailable: 'Always Available',
-      previewTitle: 'This is what the result looks like',
-      uploadPrompt: 'Download it .docx — get the analysis for free',
-      reportButton: 'Get Report',
-      aiExplanationTitle: 'Our AI analyzes the key risks in your contract:',
-      aiExplanation1: 'vague wording',
-      aiExplanation2: 'unilateral penalties',
-      aiExplanation3: 'weak termination conditions',
-      freeAnalysisTitle: 'The first analysis is free!',
-      trustBlockTitle: 'More than 1,200 contracts analyzed in July 2025',
-      fakeReview1: '"LegalHelper found 3 critical issues in my contract that I completely missed. Saved me thousands!" - Sarah M., Business Owner',
-      fakeReview2: '"Amazing tool! The AI spotted risky clauses that even our lawyer didn\'t catch initially." - Mike T., Startup Founder'
+      alwaysAvailable: 'Always Available'
     },
     analysis: {
       title: 'Document Analysis',
@@ -618,9 +607,9 @@ const translations = {
       }
     },
     home: {
-      title: 'Не платите юристу. Загрузите контракт и ИИ найдет слабые места',
+      title: 'Анализ юридических документов',
       subtitle: 'Загрузите ваши юридические документы для анализа рисков и резюмирования с помощью ИИ',
-      getStarted: 'Начать анализ',
+      getStarted: 'Начать',
       features: 'Возможности',
       featuresDescription: 'Наша платформа на базе ИИ меняет подход юристов к проверке и анализу контрактов',
       riskAnalysis: 'Анализ рисков',
@@ -657,18 +646,7 @@ const translations = {
       accuracyRate: 'Точность',
       fasterAnalysis: 'Быстрее анализ',
       documentsAnalyzed: 'Проанализировано документов',
-      alwaysAvailable: 'Доступно 24/7',
-      previewTitle: 'Вот как выглядит результат',
-      uploadPrompt: 'Загрузите .docx — получите анализ бесплатно',
-      reportButton: 'Получить отчет',
-      aiExplanationTitle: 'Наш ИИ анализирует ключевые риски в вашем контракте:',
-      aiExplanation1: 'размытые формулировки',
-      aiExplanation2: 'односторонние штрафы',
-      aiExplanation3: 'слабые условия расторжения',
-      freeAnalysisTitle: 'Первый анализ бесплатно!',
-      trustBlockTitle: 'Более 1200 контрактов проанализировано в июле 2025',
-      fakeReview1: '"LegalHelper нашел 3 критические проблемы в моем контракте, которые я полностью упустила. Сэкономил мне тысячи!" - Сара М., Владелец бизнеса',
-      fakeReview2: '"Потрясающий инструмент! ИИ заметил рискованные пункты, которые даже наш юрист изначально не заметил." - Майк Т., Основатель стартапа'
+      alwaysAvailable: 'Доступно 24/7'
     },
     analysis: {
       title: 'Анализ документа',
