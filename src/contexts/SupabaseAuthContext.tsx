@@ -16,6 +16,7 @@ interface AuthContextProps {
   isLoading: boolean
   signUp: (email: string, password: string, name: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   updateProfile: (data: { name?: string, avatar_url?: string }) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -231,6 +232,52 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    setIsLoading(true)
+    try {
+      if (useMockAuth) {
+        // Mock Google sign in
+        const mockUser = {
+          id: `google-mock-${Date.now()}`,
+          email: 'user@gmail.com',
+          name: 'John Doe',
+          avatar_url: 'https://lh3.googleusercontent.com/a/default-user=s96-c',
+          created_at: new Date().toISOString()
+        }
+        
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mock_user', JSON.stringify(mockUser))
+        }
+        setUser(mockUser)
+        setIsLoading(false)
+        return
+      }
+
+      // Regular Supabase Google OAuth
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+
+      if (error) throw error
+
+      // Note: The actual user data will be available after redirect
+      // The onAuthStateChange listener will handle setting the user state
+    } catch (error: any) {
+      console.error('Error signing in with Google:', error)
+      throw new Error(error.message || 'Failed to sign in with Google')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Sign out
   const signOut = async () => {
     setIsLoading(true)
@@ -338,6 +385,7 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       signUp,
       signIn,
+      signInWithGoogle,
       signOut,
       updateProfile,
       updatePassword,
