@@ -5,7 +5,7 @@ import { useRouter } from 'next/router'
 import { useAuth } from '@/contexts/SupabaseAuthContext'
 import Head from 'next/head'
 import Link from 'next/link'
-import { getAllUserDocuments, getDocumentAnalysis, deleteDocumentAnalysis } from '@/utils/supabaseDocumentUtils'
+import { getAllUserDocuments, getUserDocumentAnalysis, deleteDocumentAnalysis } from '@/utils/supabaseDocumentUtils'
 
 interface DocumentRecord {
   id: string;
@@ -81,7 +81,7 @@ export default function Documents() {
     
     try {
       // Get analysis from Supabase or localStorage
-      const analysis = await getDocumentAnalysis(user.id, documentId)
+      const analysis = getUserDocumentAnalysis(documentId, user.id)
       
       if (analysis) {
         if (format === 'json') {

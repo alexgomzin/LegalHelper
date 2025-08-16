@@ -298,49 +298,12 @@ function getLocalDocuments(userId?: string): any[] {
 }
 
 /**
- * Merges Supabase documents with localStorage documents
- * @param supabaseDocuments - Documents from Supabase
- * @returns Merged array of documents
- */
-function mergeWithLocalDocuments(supabaseDocuments: any[]): any[] {
-  try {
-    const localDocsStr = localStorage.getItem('analyzedDocuments');
-    if (!localDocsStr) return supabaseDocuments;
-    
-    const localDocs = JSON.parse(localDocsStr);
-    
-    // Create a map of Supabase documents by ID
-    const supabaseDocsMap = new Map(
-      supabaseDocuments.map(doc => [doc.document_id, {
-        id: doc.document_id,
-        name: doc.document_name,
-        status: doc.status,
-        date: doc.updated_at || doc.created_at
-      }])
-    );
-    
-    // Add local documents that don't exist in Supabase
-    for (const localDoc of localDocs) {
-      if (!supabaseDocsMap.has(localDoc.id)) {
-        supabaseDocsMap.set(localDoc.id, localDoc);
-      }
-    }
-    
-    // Convert back to array and sort by date
-    return Array.from(supabaseDocsMap.values())
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  } catch (error) {
-    console.error('Error merging documents:', error);
-    return supabaseDocuments;
-  }
-}
-
-/**
- * Deletes a document analysis
+ * Deletes a document analysis from Supabase and localStorage
  * @param userId - The user ID
  * @param docId - The document ID
+ * @returns Promise<boolean> - Success status
  */
-export async function deleteDocumentAnalysis(userId: string, docId: string): Promise<void> {
+export async function deleteDocumentAnalysis(userId: string, docId: string): Promise<boolean> {
   try {
     // Delete from Supabase
     const { error } = await supabase
@@ -349,36 +312,41 @@ export async function deleteDocumentAnalysis(userId: string, docId: string): Pro
       .eq('user_id', userId)
       .eq('document_id', docId);
 
-    if (error) throw error;
-    
-    // Also delete from localStorage
-    localStorage.removeItem(`analysis-${docId}`);
-    
-    // Update analyzedDocuments list
-    const existingDocsStr = localStorage.getItem('analyzedDocuments');
-    if (existingDocsStr) {
-      const docs = JSON.parse(existingDocsStr);
-      const filteredDocs = docs.filter((doc: any) => doc.id !== docId);
-      localStorage.setItem('analyzedDocuments', JSON.stringify(filteredDocs));
+    if (error) {
+      console.error('Error deleting from Supabase:', error);
+      // Continue to try localStorage cleanup even if Supabase fails
     }
-    
-    console.log(`Successfully deleted document analysis for ${docId}`);
-  } catch (error) {
-    console.error('Error deleting document analysis:', error);
-    
-    // Try to delete from localStorage anyway
+
+    // Delete from localStorage (user-specific)
     try {
-      localStorage.removeItem(`analysis-${docId}`);
+      // Remove analysis data
+      localStorage.removeItem(`analysis-${userId}-${docId}`);
       
-      const existingDocsStr = localStorage.getItem('analyzedDocuments');
-      if (existingDocsStr) {
-        const docs = JSON.parse(existingDocsStr);
+      // Remove from documents list
+      const storageKey = `analyzedDocuments_${userId}`;
+      const docsStr = localStorage.getItem(storageKey);
+      if (docsStr) {
+        const docs = JSON.parse(docsStr);
         const filteredDocs = docs.filter((doc: any) => doc.id !== docId);
-        localStorage.setItem('analyzedDocuments', JSON.stringify(filteredDocs));
+        localStorage.setItem(storageKey, JSON.stringify(filteredDocs));
+      }
+
+      // Also clean up legacy storage
+      localStorage.removeItem(`analysis-${docId}`);
+      const legacyDocsStr = localStorage.getItem('analyzedDocuments');
+      if (legacyDocsStr) {
+        const legacyDocs = JSON.parse(legacyDocsStr);
+        const filteredLegacyDocs = legacyDocs.filter((doc: any) => doc.id !== docId);
+        localStorage.setItem('analyzedDocuments', JSON.stringify(filteredLegacyDocs));
       }
     } catch (localError) {
-      console.error('Error deleting from localStorage:', localError);
+      console.error('Error cleaning up localStorage:', localError);
     }
+
+    return !error; // Return true if Supabase deletion succeeded
+  } catch (error) {
+    console.error('Error in deleteDocumentAnalysis:', error);
+    return false;
   }
 }
 

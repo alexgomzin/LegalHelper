@@ -6,7 +6,14 @@ import { useAuth } from '@/contexts/SupabaseAuthContext'
 import Head from 'next/head'
 import Link from 'next/link'
 import AnalysisResults from '@/components/AnalysisResults'
-import { getDocumentAnalysis } from '@/utils/supabaseDocumentUtils'
+import { getUserDocumentAnalysis } from '@/utils/supabaseDocumentUtils'
+
+interface DocumentRecord {
+  id: string;
+  name: string;
+  date: string;
+  status: string;
+}
 
 export default function DocumentDetail() {
   const router = useRouter()
@@ -34,31 +41,14 @@ export default function DocumentDetail() {
   const loadDocument = async (userId: string, documentId: string, showRetryMessage: boolean = false) => {
     setLoading(true)
     setError(null)
-
+    
     if (showRetryMessage) {
-      console.log(`Retrying to load document (attempt ${retryCount + 1})...`)
+      console.log(`Retrying to load document ${documentId} (attempt ${retryCount + 1})...`)
     }
-
+    
     try {
-      console.log(`Loading document with ID: ${documentId}`)
-      
-      // Try to get document info from localStorage first (for faster UI)
-      const documentsStr = localStorage.getItem('analyzedDocuments')
-      
-      if (documentsStr) {
-        const documents = JSON.parse(documentsStr)
-        const document = documents.find((doc: any) => doc.id === documentId)
-        
-        if (document) {
-          setDocumentTitle(document.name)
-          setDocumentDate(document.date)
-        } else {
-          console.warn(`Document with ID ${documentId} not found in local list`)
-        }
-      }
-      
-      // Get analysis from Supabase with localStorage fallback
-      const analysis = await getDocumentAnalysis(userId, documentId)
+      // Get analysis using getUserDocumentAnalysis with correct parameter order
+      const analysis = getUserDocumentAnalysis(documentId, userId)
       
       if (analysis) {
         console.log(`Analysis found for document ${documentId}`)
