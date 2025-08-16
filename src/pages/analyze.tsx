@@ -15,6 +15,7 @@ import { processPDF } from '@/utils/pdfProcessing'
 import { updateDocumentStatus, storeAnalysisResults, addDocument } from '@/utils/documentUtils'
 import { storeDocumentAnalysis, updateDocumentStatus as updateSupabaseDocumentStatus } from '@/utils/supabaseDocumentUtils'
 import { updateDocumentStatus as updateLocalDocumentStatus, storeAnalysisResults as storeLocalAnalysisResults } from '@/utils/documentUtils'
+import { clearCreditStatusCache } from '@/components/CreditStatus'
 
 declare global {
   interface Window {
@@ -283,10 +284,18 @@ export default function AnalyzePage() {
         // Store results in session storage for future use
         sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
         
+        // Store in Supabase and localStorage for history
+        await storeAndUpdateResults(fileId, documentName, result.analysis, 'Analyzed')
+        
+        // Clear credit status cache to refresh the display
+        if (user) {
+          clearCreditStatusCache(user.id)
+        }
+        
         // Set the analysis results
         setAnalysisResults(result.analysis)
         setUploadStatus('complete')
-        console.log('Analysis completed successfully')
+        console.log('Analysis completed successfully and stored in database')
       } else {
         throw new Error('Invalid response format from analysis API')
       }
@@ -413,10 +422,18 @@ export default function AnalyzePage() {
           // Store results in session storage
           sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
           
+          // Store in Supabase and localStorage for history
+          await storeAndUpdateResults(tempId, documentName, result.analysis, 'Analyzed')
+          
+          // Clear credit status cache to refresh the display
+          if (user) {
+            clearCreditStatusCache(user.id)
+          }
+          
           // Set the analysis results
           setAnalysisResults(result.analysis)
           setUploadStatus('complete')
-          console.log('Text analysis completed successfully')
+          console.log('Text analysis completed successfully and stored in database')
         } else {
           throw new Error('Invalid response format from text analysis API')
         }

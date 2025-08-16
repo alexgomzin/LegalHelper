@@ -11,6 +11,20 @@ interface CreditStatusProps {
   onNoCredits?: () => void;
 }
 
+/**
+ * Clear credit status cache to force refresh
+ * Call this after credit usage to update the display
+ */
+export function clearCreditStatusCache(userId: string) {
+  if (typeof window !== 'undefined') {
+    const cacheKey = `creditStatus_${userId}`;
+    localStorage.removeItem(cacheKey);
+    
+    const creditCheckKey = `creditCheck_${userId}`;
+    localStorage.removeItem(creditCheckKey);
+  }
+}
+
 export default function AnalysisStatus({ className = '', compact = false, onNoCredits }: CreditStatusProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
