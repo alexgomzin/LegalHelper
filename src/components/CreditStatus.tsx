@@ -22,6 +22,9 @@ export function clearCreditStatusCache(userId: string) {
     
     const creditCheckKey = `creditCheck_${userId}`;
     localStorage.removeItem(creditCheckKey);
+    
+    // Dispatch custom event to trigger component refresh
+    window.dispatchEvent(new CustomEvent('creditStatusUpdate', { detail: { userId } }));
   }
 }
 
@@ -34,6 +37,19 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
     isSubscribed: boolean;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [forceRefresh, setForceRefresh] = useState(0); // Counter to force refresh
+
+  // Listen for credit status updates
+  useEffect(() => {
+    const handleCreditUpdate = (event: CustomEvent) => {
+      if (user && event.detail.userId === user.id) {
+        setForceRefresh(prev => prev + 1); // Trigger refresh
+      }
+    };
+
+    window.addEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
+    return () => window.removeEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -48,9 +64,10 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
           // Check if we already have recent data in localStorage to avoid API spam
           const cacheKey = `creditStatus_${user.id}`;
           const cachedData = localStorage.getItem(cacheKey);
-          const cacheExpiry = 30000; // 30 seconds cache
+          const cacheExpiry = 5000; // Reduced to 5 seconds for faster updates
           
-          if (cachedData) {
+          // Skip cache if forceRefresh was triggered
+          if (cachedData && forceRefresh === 0) {
             const { data, timestamp } = JSON.parse(cachedData);
             if (Date.now() - timestamp < cacheExpiry) {
               setStatus(data);
@@ -103,7 +120,7 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
     }, 100); // 100ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [user, onNoCredits]);
+  }, [user, onNoCredits, forceRefresh]); // Added forceRefresh dependency
 
   if (!user || loading) {
     return null;

@@ -39,7 +39,20 @@ export default function AnalyzePage() {
   const [mockAnalysisEnabled, setMockAnalysisEnabled] = useState(false)
   const [hasCredits, setHasCredits] = useState<boolean | null>(null)
   const [creditCheckComplete, setCreditCheckComplete] = useState(false)
+  const [forceRefreshCredits, setForceRefreshCredits] = useState(0)
   // Removed showPaymentModal - using simple warning instead
+
+  // Listen for credit status updates
+  useEffect(() => {
+    const handleCreditUpdate = (event: CustomEvent) => {
+      if (user && event.detail.userId === user.id) {
+        setForceRefreshCredits(prev => prev + 1); // Trigger refresh
+      }
+    };
+
+    window.addEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
+    return () => window.removeEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
+  }, [user]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -105,9 +118,10 @@ export default function AnalyzePage() {
       // Check cache first to avoid API spam
       const cacheKey = `creditCheck_${user.id}`;
       const cachedData = localStorage.getItem(cacheKey);
-      const cacheExpiry = 30000; // 30 seconds cache
+      const cacheExpiry = 5000; // Reduced to 5 seconds
       
-      if (cachedData) {
+      // Skip cache if forceRefreshCredits was triggered
+      if (cachedData && forceRefreshCredits === 0) {
         const { hasCredits: cachedHasCredits, timestamp } = JSON.parse(cachedData);
         if (Date.now() - timestamp < cacheExpiry) {
           setHasCredits(cachedHasCredits);
@@ -146,7 +160,7 @@ export default function AnalyzePage() {
       const timeoutId = setTimeout(checkCredits, 200);
       return () => clearTimeout(timeoutId);
     }
-  }, [user]);
+  }, [user, forceRefreshCredits]); // Added forceRefreshCredits dependency
 
   const handleUploadStart = async () => {
     // Double-check credit status before starting upload
