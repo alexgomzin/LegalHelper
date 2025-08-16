@@ -255,10 +255,18 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Regular Supabase Google OAuth
+      const isProduction = typeof window !== 'undefined' && 
+        (window.location.hostname === 'legalhelper.onrender.com' || 
+         window.location.hostname.includes('legalhelper'))
+      
+      const redirectUrl = isProduction 
+        ? 'https://legalhelper.onrender.com/dashboard'
+        : `${window.location.origin}/dashboard`
+        
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

@@ -1,6 +1,7 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import Script from 'next/script'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import NavBar from '@/components/NavBar'
@@ -34,6 +35,10 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <>
+      <Head>
+        <meta name="google-site-verification" content="p1sdR2vJU4W6xL8xv3ccQpPg1kGWm7fQBIsq3rHJcFc" />
+      </Head>
+      
       {/* Google Analytics */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}

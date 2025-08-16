@@ -16,6 +16,7 @@ export default function Home() {
       <Head>
         <title>LegalHelper</title>
         <meta name="description" content="AI-powered legal document analysis - Upload your legal documents for risk analysis and summarization" />
+        <meta name="google-site-verification" content="p1sdR2vJU4W6xL8xv3ccQpPg1kGWm7fQBIsq3rHJcFc" />
       </Head>
       
     <div>

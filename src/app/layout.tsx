@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'LegalHelper',
   description: 'AI-powered legal document analysis',
+  verification: {
+    google: 'p1sdR2vJU4W6xL8xv3ccQpPg1kGWm7fQBIsq3rHJcFc',
+  },
   icons: {
     icon: [
       {
