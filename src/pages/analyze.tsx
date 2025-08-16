@@ -537,6 +537,27 @@ export default function AnalyzePage() {
           </div>
         )}
 
+        {/* Progress indicators moved to top for better visibility */}
+        {isUploading && !needsClientProcessing && (
+          <div className="mb-8">
+            <h3 className="text-lg font-medium mb-2">{t('analyze.uploadingDocument')}</h3>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+              <div 
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-gray-500">{t('analyze.uploadingMessage')}</p>
+          </div>
+        )}
+        
+        {!needsClientProcessing && (
+          <AnalysisProgressIndicator 
+            isAnalyzing={isAnalyzing}
+            duration={45000} // 45 seconds expected duration
+          />
+        )}
+
         {uploadStatus === 'idle' && (
           <div className="mt-10">
             <DocumentUploader
@@ -558,26 +579,6 @@ export default function AnalyzePage() {
               disabled={hasCredits === false}
             />
           </div>
-        )}
-
-        {isUploading && !needsClientProcessing && (
-          <div className="my-8">
-            <h3 className="text-lg font-medium mb-2">{t('analyze.uploadingDocument')}</h3>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-gray-500">{t('analyze.uploadingMessage')}</p>
-          </div>
-        )}
-        
-        {!needsClientProcessing && (
-          <AnalysisProgressIndicator 
-            isAnalyzing={isAnalyzing}
-            duration={45000} // 45 seconds expected duration
-          />
         )}
         
         {/* Show analysis results when complete */}
