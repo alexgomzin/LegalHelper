@@ -61,20 +61,9 @@ export default function Documents() {
       console.error('Error loading documents:', error)
       setError('Failed to load your documents. This might be due to a network issue.')
       
-      // Try to get documents from localStorage as fallback
-      try {
-        const storedDocs = localStorage.getItem('analyzedDocuments')
-        if (storedDocs) {
-          const localDocs = JSON.parse(storedDocs)
-          setDocuments(localDocs)
-          setError('Showing cached documents. Some recent changes may not be visible.')
-        } else {
-          setDocuments([])
-        }
-      } catch (localError) {
-        console.error('Error loading documents from localStorage:', localError)
-        setDocuments([])
-      }
+      // Don't use localStorage as fallback since it's not user-specific and creates security issues
+      // Only rely on Supabase for document storage to ensure proper user isolation
+      setDocuments([])
     } finally {
       setIsLoadingDocuments(false)
     }

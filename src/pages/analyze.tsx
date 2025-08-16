@@ -101,11 +101,31 @@ export default function AnalyzePage() {
     const checkCredits = async () => {
       if (!user) return;
       
+      // Check cache first to avoid API spam
+      const cacheKey = `creditCheck_${user.id}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheExpiry = 30000; // 30 seconds cache
+      
+      if (cachedData) {
+        const { hasCredits: cachedHasCredits, timestamp } = JSON.parse(cachedData);
+        if (Date.now() - timestamp < cacheExpiry) {
+          setHasCredits(cachedHasCredits);
+          setCreditCheckComplete(true);
+          return;
+        }
+      }
+      
       try {
         const response = await fetch(`/api/payment/check-credits?user_id=${user.id}`);
         if (response.ok) {
           const data = await response.json();
           setHasCredits(data.has_credits);
+          
+          // Cache the result
+          localStorage.setItem(cacheKey, JSON.stringify({
+            hasCredits: data.has_credits,
+            timestamp: Date.now()
+          }));
         } else {
           console.error('Failed to check credit status');
           // Default to allowing analysis if we can't check credits
@@ -121,7 +141,9 @@ export default function AnalyzePage() {
     };
 
     if (user) {
-      checkCredits();
+      // Add small delay to prevent race conditions with other components
+      const timeoutId = setTimeout(checkCredits, 200);
+      return () => clearTimeout(timeoutId);
     }
   }, [user]);
 
@@ -539,6 +561,13 @@ export default function AnalyzePage() {
             isAnalyzing={isAnalyzing}
             duration={45000} // 45 seconds expected duration
           />
+        )}
+        
+        {/* Show analysis results when complete */}
+        {uploadStatus === 'complete' && analysisResults && (
+          <div className="mt-8">
+            <AnalysisResults results={analysisResults} />
+          </div>
         )}
         
         {needsClientProcessing && uploadedFile && (

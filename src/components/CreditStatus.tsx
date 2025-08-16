@@ -27,41 +27,68 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
       return;
     }
 
-    const fetchStatus = async () => {
-      try {
-        const response = await fetch(`/api/payment/check-credits?user_id=${user.id}`);
-        
-        if (response.ok) {
-          const data = await response.json();
-          setStatus({
-            tier: data.subscription_tier,
-            analysesRemaining: data.credits_remaining,
-            isSubscribed: data.subscription_tier === 'subscription'
-          });
+    // Debounce API calls to prevent multiple simultaneous requests
+    const timeoutId = setTimeout(() => {
+      const fetchStatus = async () => {
+        try {
+          // Check if we already have recent data in localStorage to avoid API spam
+          const cacheKey = `creditStatus_${user.id}`;
+          const cachedData = localStorage.getItem(cacheKey);
+          const cacheExpiry = 30000; // 30 seconds cache
           
-          // Remove automatic onNoCredits trigger - only show modal when user tries to upload
-        } else {
+          if (cachedData) {
+            const { data, timestamp } = JSON.parse(cachedData);
+            if (Date.now() - timestamp < cacheExpiry) {
+              setStatus(data);
+              setLoading(false);
+              return;
+            }
+          }
+          
+          const response = await fetch(`/api/payment/check-credits?user_id=${user.id}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const statusData = {
+              tier: data.subscription_tier,
+              analysesRemaining: data.credits_remaining,
+              isSubscribed: data.subscription_tier === 'subscription'
+            };
+            
+            setStatus(statusData);
+            
+            // Cache the result
+            localStorage.setItem(cacheKey, JSON.stringify({
+              data: statusData,
+              timestamp: Date.now()
+            }));
+            
+            // Remove automatic onNoCredits trigger - only show modal when user tries to upload
+          } else {
+            // Default to free tier if API fails
+            setStatus({
+              tier: 'free',
+              analysesRemaining: 0,
+              isSubscribed: false
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching analysis status:', error);
           // Default to free tier if API fails
           setStatus({
             tier: 'free',
             analysesRemaining: 0,
             isSubscribed: false
           });
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching analysis status:', error);
-        // Default to free tier if API fails
-        setStatus({
-          tier: 'free',
-          analysesRemaining: 0,
-          isSubscribed: false
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchStatus();
+      fetchStatus();
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [user, onNoCredits]);
 
   if (!user || loading) {

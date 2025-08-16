@@ -50,36 +50,16 @@ export default function Dashboard() {
         // Only display the 3 most recent documents
         setRecentDocuments(userDocuments.slice(0, 3))
       } else {
-        // If no documents found in Supabase, try localStorage as fallback
-        try {
-          const storedDocs = localStorage.getItem('analyzedDocuments')
-          if (storedDocs) {
-            const parsedDocs = JSON.parse(storedDocs)
-            setRecentDocuments(parsedDocs.slice(0, 3))
-          } else {
-            setRecentDocuments([])
-          }
-        } catch (localError) {
-          console.error('Error loading documents from localStorage:', localError)
-          setRecentDocuments([])
-        }
+        // If no documents found in Supabase, show empty state
+        // Don't use localStorage as fallback since it's not user-specific and creates security issues
+        setRecentDocuments([])
       }
     } catch (error) {
       console.error('Error loading documents from Supabase:', error)
       
-      // Try to get documents from localStorage as fallback
-      try {
-        const storedDocs = localStorage.getItem('analyzedDocuments')
-        if (storedDocs) {
-          const parsedDocs = JSON.parse(storedDocs)
-          setRecentDocuments(parsedDocs.slice(0, 3))
-        } else {
-          setRecentDocuments([])
-        }
-      } catch (localError) {
-        console.error('Error loading documents from localStorage:', localError)
-        setRecentDocuments([])
-      }
+      // Don't use localStorage as fallback since it's not user-specific and creates security issues
+      // Only rely on Supabase for document storage to ensure proper user isolation
+      setRecentDocuments([])
     } finally {
       setIsLoadingDocuments(false)
     }

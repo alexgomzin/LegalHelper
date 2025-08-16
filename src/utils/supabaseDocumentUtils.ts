@@ -57,14 +57,15 @@ export async function storeDocumentAnalysis(
 
     // Also store in localStorage for offline/fallback access
     try {
-      localStorage.setItem(`analysis-${docId}`, JSON.stringify({
+      localStorage.setItem(`analysis-${userId}-${docId}`, JSON.stringify({
         ...analysis,
         _timestamp: new Date().toISOString(),
-        _docId: docId
+        _docId: docId,
+        _userId: userId
       }));
       
       // Add to analyzedDocuments list if needed
-      updateLocalDocumentsList(docId, docName, status);
+      updateLocalDocumentsList(docId, docName, status, userId);
     } catch (localError) {
       console.warn('Failed to store in localStorage, but Supabase storage succeeded:', localError);
     }
@@ -73,14 +74,15 @@ export async function storeDocumentAnalysis(
     
     // Fallback to local storage only
     try {
-      localStorage.setItem(`analysis-${docId}`, JSON.stringify({
+      localStorage.setItem(`analysis-${userId}-${docId}`, JSON.stringify({
         ...analysis,
         _timestamp: new Date().toISOString(),
-        _docId: docId
+        _docId: docId,
+        _userId: userId
       }));
       
       // Add to analyzedDocuments list
-      updateLocalDocumentsList(docId, docName, status);
+      updateLocalDocumentsList(docId, docName, status, userId);
     } catch (localError) {
       console.error('Critical error: Failed to store document analysis anywhere:', localError);
     }
@@ -89,118 +91,89 @@ export async function storeDocumentAnalysis(
 
 /**
  * Updates local documents list in localStorage
+ * @param docId - Document ID
+ * @param docName - Document name  
+ * @param status - Document status
+ * @param userId - User ID for user-specific storage
  */
-function updateLocalDocumentsList(docId: string, docName: string, status: string): void {
+function updateLocalDocumentsList(docId: string, docName: string, status: string, userId?: string): void {
   try {
-    const existingDocsStr = localStorage.getItem('analyzedDocuments');
-    let analyzedDocuments = [];
+    // Use user-specific storage key if userId provided
+    const storageKey = userId ? `analyzedDocuments_${userId}` : 'analyzedDocuments';
     
-    if (existingDocsStr) {
-      analyzedDocuments = JSON.parse(existingDocsStr);
-      // Update existing document if it exists
-      const docIndex = analyzedDocuments.findIndex((doc: any) => doc.id === docId);
-      if (docIndex >= 0) {
-        analyzedDocuments[docIndex] = {
-          ...analyzedDocuments[docIndex],
-          name: docName,
-          status,
-          date: new Date().toISOString()
-        };
-      } else {
-        // Add new document to the beginning of the list
-        analyzedDocuments.unshift({
-          id: docId,
-          name: docName,
-          status,
-          date: new Date().toISOString()
-        });
-      }
+    const existingDocsStr = localStorage.getItem(storageKey);
+    const existingDocs = existingDocsStr ? JSON.parse(existingDocsStr) : [];
+    
+    // Check if document already exists
+    const existingIndex = existingDocs.findIndex((doc: any) => doc.id === docId);
+    
+    const documentEntry = {
+      id: docId,
+      name: docName,
+      status: status,
+      date: new Date().toISOString()
+    };
+    
+    if (existingIndex !== -1) {
+      // Update existing entry
+      existingDocs[existingIndex] = documentEntry;
     } else {
-      // Create new documents list
-      analyzedDocuments = [{
-        id: docId,
-        name: docName,
-        status,
-        date: new Date().toISOString()
-      }];
+      // Add new entry at the beginning
+      existingDocs.unshift(documentEntry);
     }
     
-    localStorage.setItem('analyzedDocuments', JSON.stringify(analyzedDocuments));
+    // Save back to localStorage with user-specific key
+    localStorage.setItem(storageKey, JSON.stringify(existingDocs));
+    
+    console.log(`Updated local documents list for ${userId ? `user ${userId}` : 'legacy storage'}`);
   } catch (error) {
     console.error('Error updating local documents list:', error);
   }
 }
 
 /**
- * Gets document analysis from Supabase with improved error handling
- * @param userId - The user ID
- * @param docId - The document ID
- * @returns The analysis result or null if not found
+ * Gets a specific document analysis from localStorage with user isolation
+ * @param docId - Document ID
+ * @param userId - User ID for user-specific storage
+ * @returns Document analysis or null if not found
  */
-export async function getDocumentAnalysis(userId: string, docId: string): Promise<any> {
+export function getUserDocumentAnalysis(docId: string, userId: string): any {
   try {
-    console.log(`Loading analysis for document: ${docId}, user: ${userId}`);
-    
-    // Try to get from Supabase with retry mechanism
-    const supabaseAnalysis = await retryOperation(async () => {
-    const { data, error } = await supabase
-      .from('document_analysis')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('document_id', docId)
-      .single();
-
-    if (error) {
-        if (error.code === 'PGRST116') {
-          // No rows returned - this is expected, not an error
-          return null;
-        }
-        throw error;
-      }
-
-      return data;
-    });
-
-    if (supabaseAnalysis) {
-      console.log(`Found analysis in Supabase for document: ${docId}`);
-      
-      // Store in localStorage for future offline access
-      try {
-        localStorage.setItem(`analysis-${docId}`, JSON.stringify({
-          ...supabaseAnalysis.analysis,
-          _timestamp: supabaseAnalysis.updated_at,
-          _docId: docId
-        }));
-      } catch (localError) {
-        console.warn('Failed to cache Supabase analysis in localStorage:', localError);
-      }
-      
-      return supabaseAnalysis.analysis;
+    // Try user-specific key first
+    const userSpecificData = localStorage.getItem(`analysis-${userId}-${docId}`);
+    if (userSpecificData) {
+      return JSON.parse(userSpecificData);
     }
-
-    // If not found in Supabase, try localStorage
-    console.log(`No analysis found in Supabase for document: ${docId}, checking localStorage`);
-    return getLocalDocumentAnalysis(docId);
-  } catch (error) {
-    console.error('Error getting document analysis from Supabase:', error);
     
-    // Try localStorage as fallback
-    console.log(`Falling back to localStorage for document: ${docId}`);
-    return getLocalDocumentAnalysis(docId);
+    // For backward compatibility, try legacy key but only if no userId-specific data exists
+    const legacyData = localStorage.getItem(`analysis-${docId}`);
+    if (legacyData) {
+      const parsed = JSON.parse(legacyData);
+      // Migrate to user-specific storage
+      localStorage.setItem(`analysis-${userId}-${docId}`, legacyData);
+      // Remove legacy key to prevent future conflicts
+      localStorage.removeItem(`analysis-${docId}`);
+      return parsed;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting user document analysis:', error);
+    return null;
   }
 }
 
 /**
- * Gets document analysis from localStorage
- * @param docId - The document ID
- * @returns The analysis result or null if not found
+ * Gets document analysis from localStorage (legacy function - use getUserDocumentAnalysis instead)
+ * @param docId - Document ID
+ * @returns Document analysis or null if not found
  */
 function getLocalDocumentAnalysis(docId: string): any {
   try {
-    const analysisStr = localStorage.getItem(`analysis-${docId}`);
-    return analysisStr ? JSON.parse(analysisStr) : null;
+    const analysisData = localStorage.getItem(`analysis-${docId}`);
+    return analysisData ? JSON.parse(analysisData) : null;
   } catch (error) {
-    console.error('Error getting document analysis from localStorage:', error);
+    console.error('Error getting local document analysis:', error);
     return null;
   }
 }
@@ -244,7 +217,7 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
     // Only merge with local documents if Supabase returned empty results
     if (transformedDocuments.length === 0) {
       console.log('No documents found in Supabase, checking localStorage');
-      const localDocuments = getLocalDocuments();
+      const localDocuments = getLocalDocuments(userId);
       if (localDocuments.length > 0) {
         console.log(`Found ${localDocuments.length} documents in localStorage`);
         return localDocuments;
@@ -259,15 +232,19 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
         status: doc.status,
         date: doc.date
       }));
-      localStorage.setItem('analyzedDocuments', JSON.stringify(documentsList));
       
-      // Cache individual analyses
+      // Use user-specific storage key
+      const storageKey = `analyzedDocuments_${userId}`;
+      localStorage.setItem(storageKey, JSON.stringify(documentsList));
+      
+      // Cache individual analyses with user-specific keys
       transformedDocuments.forEach(doc => {
         if (doc.analysis) {
-          localStorage.setItem(`analysis-${doc.id}`, JSON.stringify({
+          localStorage.setItem(`analysis-${userId}-${doc.id}`, JSON.stringify({
             ...doc.analysis,
             _timestamp: doc.date,
-            _docId: doc.id
+            _docId: doc.id,
+            _userId: userId
           }));
         }
       });
@@ -281,7 +258,7 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
     
     // Fallback to local storage with better error handling
     console.log('Falling back to localStorage');
-    const localDocuments = getLocalDocuments();
+    const localDocuments = getLocalDocuments(userId);
     
     if (localDocuments.length === 0) {
       console.log('No documents found in localStorage either');
@@ -296,14 +273,27 @@ export async function getAllUserDocuments(userId: string): Promise<any[]> {
 
 /**
  * Gets documents from localStorage with error handling
+ * @param userId - User ID to filter documents (optional for backward compatibility)
  */
-function getLocalDocuments(): any[] {
-    try {
-      const localDocsStr = localStorage.getItem('analyzedDocuments');
-      return localDocsStr ? JSON.parse(localDocsStr) : [];
-    } catch (localError) {
-      console.error('Error getting local documents:', localError);
+function getLocalDocuments(userId?: string): any[] {
+  try {
+    // If userId provided, use user-specific storage key
+    const storageKey = userId ? `analyzedDocuments_${userId}` : 'analyzedDocuments';
+    const localDocsStr = localStorage.getItem(storageKey);
+    
+    if (!localDocsStr) {
+      // If no user-specific documents found, try legacy key but only if no userId provided
+      if (!userId) {
+        const legacyDocsStr = localStorage.getItem('analyzedDocuments');
+        return legacyDocsStr ? JSON.parse(legacyDocsStr) : [];
+      }
       return [];
+    }
+    
+    return JSON.parse(localDocsStr);
+  } catch (localError) {
+    console.error('Error getting local documents:', localError);
+    return [];
   }
 }
 
