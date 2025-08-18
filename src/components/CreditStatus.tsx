@@ -15,19 +15,31 @@ interface CreditStatusProps {
  * Clear credit status cache to force refresh
  * Call this after credit usage to update the display
  */
+// Global reference to force refresh function
+let globalForceRefresh: ((userId: string) => void) | null = null;
+
 export function clearCreditStatusCache(userId: string) {
   if (typeof window !== 'undefined') {
     console.log('🔄 Clearing credit status cache for user:', userId);
     
     const cacheKey = `creditStatus_${userId}`;
-    localStorage.removeItem(cacheKey);
-    
     const creditCheckKey = `creditCheck_${userId}`;
+    
+    console.log('🗑️ Removing keys:', { cacheKey, creditCheckKey });
+    localStorage.removeItem(cacheKey);
     localStorage.removeItem(creditCheckKey);
     
-    console.log('📡 Dispatching creditStatusUpdate event');
+    // Try direct function call first
+    if (globalForceRefresh) {
+      console.log('🎯 Calling globalForceRefresh directly');
+      globalForceRefresh(userId);
+    }
+    
+    console.log('📡 Dispatching creditStatusUpdate event with userId:', userId);
     // Dispatch custom event to trigger component refresh
-    window.dispatchEvent(new CustomEvent('creditStatusUpdate', { detail: { userId } }));
+    const event = new CustomEvent('creditStatusUpdate', { detail: { userId } });
+    window.dispatchEvent(event);
+    console.log('✅ Event dispatched successfully');
   }
 }
 
@@ -42,23 +54,57 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
   const [loading, setLoading] = useState(true);
   const [forceRefresh, setForceRefresh] = useState(0); // Counter to force refresh
 
+  // Register global force refresh function
+  useEffect(() => {
+    if (user) {
+      console.log('📝 Registering globalForceRefresh for user:', user.id);
+      globalForceRefresh = (userId: string) => {
+        if (userId === user.id) {
+          console.log('🚀 Direct force refresh called for user:', userId);
+          setForceRefresh(prev => {
+            const newValue = prev + 1;
+            console.log('📈 Direct forceRefresh update:', prev, '->', newValue);
+            return newValue;
+          });
+        }
+      };
+    }
+    
+    return () => {
+      console.log('🗑️ Unregistering globalForceRefresh');
+      globalForceRefresh = null;
+    };
+  }, [user]);
+
   // Listen for credit status updates
   useEffect(() => {
     const handleCreditUpdate = (event: CustomEvent) => {
       console.log('🎯 Received creditStatusUpdate event:', event.detail);
       if (user && event.detail.userId === user.id) {
-        console.log('✅ Event matches current user, forcing refresh');
-        setForceRefresh(prev => prev + 1); // Trigger refresh
+        console.log('✅ Event matches current user, forcing refresh. Current forceRefresh:', forceRefresh);
+        const newForceRefresh = forceRefresh + 1;
+        console.log('🔄 Setting forceRefresh to:', newForceRefresh);
+        setForceRefresh(newForceRefresh);
       } else {
         console.log('❌ Event does not match current user:', { eventUserId: event.detail.userId, currentUserId: user?.id });
       }
     };
 
+    console.log('👂 Adding creditStatusUpdate event listener for user:', user?.id);
     window.addEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
-    return () => window.removeEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
-  }, [user]);
+    return () => {
+      console.log('🔇 Removing creditStatusUpdate event listener');
+      window.removeEventListener('creditStatusUpdate', handleCreditUpdate as EventListener);
+    };
+  }, [user, forceRefresh]);
 
   useEffect(() => {
+    console.log('🔥 CreditStatus useEffect triggered:', { 
+      user: user?.id, 
+      forceRefresh, 
+      timestamp: Date.now() 
+    });
+
     if (!user) {
       setLoading(false);
       return;
@@ -98,6 +144,7 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
               isSubscribed: data.subscription_tier === 'subscription'
             };
             
+            console.log('🔄 Setting new status state:', statusData);
             setStatus(statusData);
             
             // Cache the result
@@ -106,7 +153,7 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
               timestamp: Date.now()
             }));
             
-            console.log('✅ Credit status updated:', statusData);
+            console.log('✅ Credit status updated and cached:', statusData);
             
             // Remove automatic onNoCredits trigger - only show modal when user tries to upload
           } else {
@@ -136,6 +183,14 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
 
     return () => clearTimeout(timeoutId);
   }, [user, onNoCredits, forceRefresh]); // Added forceRefresh dependency
+
+  // Add render logging
+  console.log('🎨 CreditStatus render:', { 
+    user: user?.id, 
+    loading, 
+    status, 
+    forceRefresh 
+  });
 
   if (!user || loading) {
     return null;
