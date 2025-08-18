@@ -352,7 +352,7 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
             key.startsWith('creditCheck_') ||
             key.startsWith('analysis-') ||
             key.startsWith('analyzedDocuments_') ||
-            key === 'sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token'
+            key.startsWith('sb-') // Clear all Supabase auth tokens
           )) {
             keysToRemove.push(key)
           }
