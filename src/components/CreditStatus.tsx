@@ -17,12 +17,15 @@ interface CreditStatusProps {
  */
 export function clearCreditStatusCache(userId: string) {
   if (typeof window !== 'undefined') {
+    console.log('🔄 Clearing credit status cache for user:', userId);
+    
     const cacheKey = `creditStatus_${userId}`;
     localStorage.removeItem(cacheKey);
     
     const creditCheckKey = `creditCheck_${userId}`;
     localStorage.removeItem(creditCheckKey);
     
+    console.log('📡 Dispatching creditStatusUpdate event');
     // Dispatch custom event to trigger component refresh
     window.dispatchEvent(new CustomEvent('creditStatusUpdate', { detail: { userId } }));
   }
@@ -42,8 +45,12 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
   // Listen for credit status updates
   useEffect(() => {
     const handleCreditUpdate = (event: CustomEvent) => {
+      console.log('🎯 Received creditStatusUpdate event:', event.detail);
       if (user && event.detail.userId === user.id) {
+        console.log('✅ Event matches current user, forcing refresh');
         setForceRefresh(prev => prev + 1); // Trigger refresh
+      } else {
+        console.log('❌ Event does not match current user:', { eventUserId: event.detail.userId, currentUserId: user?.id });
       }
     };
 
@@ -61,6 +68,8 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
     const timeoutId = setTimeout(() => {
       const fetchStatus = async () => {
         try {
+          console.log('💳 Fetching credit status for user:', user.id, 'forceRefresh:', forceRefresh);
+          
           // Check if we already have recent data in localStorage to avoid API spam
           const cacheKey = `creditStatus_${user.id}`;
           const cachedData = localStorage.getItem(cacheKey);
@@ -70,16 +79,19 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
           if (cachedData && forceRefresh === 0) {
             const { data, timestamp } = JSON.parse(cachedData);
             if (Date.now() - timestamp < cacheExpiry) {
+              console.log('📋 Using cached credit data');
               setStatus(data);
               setLoading(false);
               return;
             }
           }
           
+          console.log('🌐 Making API call to check credits (cache skipped or expired)');
           const response = await fetch(`/api/payment/check-credits?user_id=${user.id}`);
           
           if (response.ok) {
             const data = await response.json();
+            console.log('📊 Credit status response:', data);
             const statusData = {
               tier: data.subscription_tier,
               analysesRemaining: data.credits_remaining,
@@ -94,8 +106,11 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
               timestamp: Date.now()
             }));
             
+            console.log('✅ Credit status updated:', statusData);
+            
             // Remove automatic onNoCredits trigger - only show modal when user tries to upload
           } else {
+            console.error('❌ Failed to fetch credit status, defaulting to free tier');
             // Default to free tier if API fails
             setStatus({
               tier: 'free',
@@ -104,7 +119,7 @@ export default function AnalysisStatus({ className = '', compact = false, onNoCr
             });
           }
         } catch (error) {
-          console.error('Error fetching analysis status:', error);
+          console.error('❌ Error fetching analysis status:', error);
           // Default to free tier if API fails
           setStatus({
             tier: 'free',

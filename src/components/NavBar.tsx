@@ -26,9 +26,17 @@ const NavBar = () => {
     { href: '/how-it-works', label: t('common.howItWorks') },
   ]
 
-  const handleLogout = () => {
-    signOut()
-    setProfileDropdownOpen(false)
+  const handleLogout = async () => {
+    try {
+      setProfileDropdownOpen(false)
+      await signOut()
+      // Force redirect to home page after logout
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error during logout:', error)
+      // Force redirect even if logout fails
+      window.location.href = '/'
+    }
   }
 
   return (

@@ -40,6 +40,7 @@ export default function AnalyzePage() {
   const [hasCredits, setHasCredits] = useState<boolean | null>(null)
   const [creditCheckComplete, setCreditCheckComplete] = useState(false)
   const [forceRefreshCredits, setForceRefreshCredits] = useState(0)
+  const [creditStatusKey, setCreditStatusKey] = useState(0) // Key for forcing CreditStatus re-render
   // Removed showPaymentModal - using simple warning instead
 
   // Listen for credit status updates
@@ -304,6 +305,7 @@ export default function AnalyzePage() {
         // Clear credit status cache to refresh the display
         if (user) {
           clearCreditStatusCache(user.id)
+          setCreditStatusKey(prev => prev + 1) // Force CreditStatus re-render
         }
         
         // Set the analysis results
@@ -442,6 +444,7 @@ export default function AnalyzePage() {
           // Clear credit status cache to refresh the display
           if (user) {
             clearCreditStatusCache(user.id)
+            setCreditStatusKey(prev => prev + 1) // Force CreditStatus re-render
           }
           
           // Set the analysis results
@@ -518,7 +521,7 @@ export default function AnalyzePage() {
 
         {isAuthenticated && creditCheckComplete && (
           <div className="mb-6">
-            <CreditStatus />
+            <CreditStatus key={creditStatusKey} />
             {hasCredits === false && (
               <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <div className="flex items-start">

@@ -202,13 +202,33 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
+      // Clear any existing session first to avoid conflicts
+      await supabase.auth.signOut({ scope: 'local' })
+
       // Regular Supabase sign in
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(), // Normalize email
         password
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase signIn error:', error)
+        // Provide more specific error messages
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.')
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please check your email and click the confirmation link before signing in.')
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Too many login attempts. Please wait a few minutes and try again.')
+        } else {
+          throw new Error(error.message || 'Login failed. Please try again.')
+        }
+      }
+
+      // Set session first
+      if (data.session) {
+        setSession(data.session)
+      }
 
       // After successful sign-in, refresh the user profile
       if (data.user) {
@@ -220,13 +240,22 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
         
         if (profileError) {
           console.error('Error fetching user profile:', profileError)
+          // If profile doesn't exist, create a basic user object from auth data
+          const basicUser = {
+            id: data.user.id,
+            email: data.user.email || email,
+            name: data.user.user_metadata?.name || data.user.user_metadata?.full_name || email.split('@')[0],
+            avatar_url: data.user.user_metadata?.avatar_url || null,
+            created_at: data.user.created_at
+          }
+          setUser(basicUser)
         } else if (profile) {
           setUser(profile)
         }
       }
     } catch (error: any) {
       console.error('Error signing in:', error)
-      throw new Error(error.message || 'Invalid login credentials')
+      throw error // Re-throw to maintain the specific error message
     } finally {
       setIsLoading(false)
     }
@@ -301,14 +330,43 @@ export function SupabaseAuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Regular Supabase sign out
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      // Regular Supabase sign out - use 'global' scope to sign out from all sessions
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+      if (error) {
+        console.error('Supabase signOut error:', error)
+        // Don't throw error, continue with cleanup
+      }
+      
+      // Clear all local state and storage
       setUser(null)
       setSession(null)
+      
+      // Clear any cached data
+      if (typeof window !== 'undefined') {
+        // Clear all localStorage items related to the user
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (
+            key.startsWith('creditStatus_') ||
+            key.startsWith('creditCheck_') ||
+            key.startsWith('analysis-') ||
+            key.startsWith('analyzedDocuments_') ||
+            key === 'sb-' + supabase.supabaseUrl.split('//')[1].split('.')[0] + '-auth-token'
+          )) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key))
+        
+        // Clear session storage
+        sessionStorage.clear()
+      }
     } catch (error: any) {
       console.error('Error signing out:', error)
-      throw new Error(error.message || 'An error occurred during sign out')
+      // Still clear local state even if Supabase signOut fails
+      setUser(null)
+      setSession(null)
     } finally {
       setIsLoading(false)
     }
