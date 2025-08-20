@@ -5,6 +5,7 @@ interface RiskItem {
   text: string;
   riskLevel: 'high' | 'medium' | 'low';
   explanation: string;
+  recommendation: string;
 }
 
 export default function RealisticAnalysisExample() {
@@ -18,7 +19,10 @@ LIABILITY LIMITATION
 IN NO EVENT SHALL LAW FIRM BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES.
 
 TERMINATION
-Either party may terminate this agreement at any time without cause by providing written notice.`;
+Either party may terminate this agreement at any time without cause by providing written notice.
+
+CONFIDENTIALITY
+Both parties agree to maintain confidentiality regarding all matters discussed during this engagement.`;
 
   // Simplified risk items
   const riskItems: RiskItem[] = [
@@ -26,19 +30,29 @@ Either party may terminate this agreement at any time without cause by providing
       id: 1,
       text: "Late payments may incur interest charges of 2% per month",
       riskLevel: 'high',
-      explanation: "24% annual interest rate is extremely high and may be legally unenforceable in many jurisdictions."
+      explanation: "24% annual interest rate is extremely high and may be legally unenforceable in many jurisdictions.",
+      recommendation: "Negotiate for a lower interest rate (1-1.5% monthly) or request removal of interest charges entirely."
     },
     {
       id: 2,
       text: "IN NO EVENT SHALL LAW FIRM BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES",
       riskLevel: 'high',
-      explanation: "Broad liability limitation may prevent recovery even in cases of professional negligence."
+      explanation: "Broad liability limitation may prevent recovery even in cases of professional negligence.",
+      recommendation: "Limit this clause to exclude gross negligence, willful misconduct, or professional malpractice."
     },
     {
       id: 3,
       text: "Either party may terminate this agreement at any time without cause",
       riskLevel: 'medium',
-      explanation: "Immediate termination without notice period could leave you without representation at critical moments."
+      explanation: "Immediate termination without notice period could leave you without representation at critical moments.",
+      recommendation: "Add a reasonable notice period (30 days) except in cases of material breach or emergencies."
+    },
+    {
+      id: 4,
+      text: "Both parties agree to maintain confidentiality",
+      riskLevel: 'low',
+      explanation: "Standard confidentiality clause with no apparent issues, though scope could be more specific.",
+      recommendation: "Consider defining specific types of confidential information and duration of confidentiality obligations."
     }
   ];
 
@@ -49,15 +63,20 @@ Either party may terminate this agreement at any time without cause by providing
     const sortedRisks = [...riskItems].sort((a, b) => b.text.length - a.text.length);
     
     sortedRisks.forEach(risk => {
-      const riskColorClass = 
-        risk.riskLevel === 'high' ? 'bg-red-100 text-red-900 border-b-2 border-red-400' :
-        risk.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-900 border-b-2 border-yellow-400' :
-        'bg-green-100 text-green-900 border-b-2 border-green-400';
+      const baseColorClass = 
+        risk.riskLevel === 'high' ? 'bg-red-50 text-red-800 border-l-4 border-red-400' :
+        risk.riskLevel === 'medium' ? 'bg-yellow-50 text-yellow-800 border-l-4 border-yellow-400' :
+        'bg-green-50 text-green-800 border-l-4 border-green-400';
       
       const isActive = activeRisk === risk.id;
-      const activeClass = isActive ? 'ring-2 ring-blue-400 font-semibold' : '';
+      const activeClass = isActive ? 
+        (risk.riskLevel === 'high' ? 'bg-red-100 shadow-lg transform scale-105' :
+         risk.riskLevel === 'medium' ? 'bg-yellow-100 shadow-lg transform scale-105' :
+         'bg-green-100 shadow-lg transform scale-105') : '';
       
-      const highlightSpan = `<span class="px-1 py-0.5 rounded cursor-pointer transition-all hover:shadow-sm ${riskColorClass} ${activeClass}" data-risk-id="${risk.id}">${risk.text}</span>`;
+      const hoverClass = 'hover:shadow-md hover:bg-opacity-80 hover:transform hover:scale-102';
+      
+      const highlightSpan = `<span class="px-2 py-1 rounded-r-md cursor-pointer transition-all duration-300 ease-in-out ${baseColorClass} ${activeClass} ${hoverClass}" data-risk-id="${risk.id}">${risk.text}</span>`;
       highlightedText = highlightedText.replace(risk.text, highlightSpan);
     });
     
@@ -80,6 +99,7 @@ Either party may terminate this agreement at any time without cause by providing
           <div className="flex items-center space-x-2 text-sm">
             <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium text-xs">2 High</span>
             <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium text-xs">1 Medium</span>
+            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium text-xs">1 Low</span>
           </div>
         </div>
       </div>
@@ -110,42 +130,57 @@ Either party may terminate this agreement at any time without cause by providing
             <h4 className="text-sm font-medium text-gray-600 mb-3 uppercase tracking-wide">Risk Analysis</h4>
             
             {activeRiskItem && (
-              <div className="mb-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center mb-2">
-                  <span className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                    activeRiskItem.riskLevel === 'high' ? 'bg-red-500' :
-                    activeRiskItem.riskLevel === 'medium' ? 'bg-yellow-500' :
-                    'bg-green-500'
-                  }`}></span>
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    {activeRiskItem.riskLevel} Risk
-                  </span>
+              <div className="mb-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ease-in-out">
+                <div className="p-4">
+                  <div className="flex items-center mb-3">
+                    <span className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                      activeRiskItem.riskLevel === 'high' ? 'bg-red-500' :
+                      activeRiskItem.riskLevel === 'medium' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}></span>
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      {activeRiskItem.riskLevel} Risk
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <h5 className="text-xs font-semibold text-red-700 mb-1 uppercase tracking-wide">Risk Analysis:</h5>
+                      <p className="text-sm text-gray-700 leading-relaxed">{activeRiskItem.explanation}</p>
+                    </div>
+                    
+                    <div className="pt-2 border-t border-gray-100">
+                      <h5 className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">Recommendation:</h5>
+                      <p className="text-sm text-gray-700 leading-relaxed">{activeRiskItem.recommendation}</p>
+                    </div>
+                  </div>
                 </div>
-                
-                <p className="text-sm text-gray-700 leading-relaxed">{activeRiskItem.explanation}</p>
               </div>
             )}
 
             <div className="space-y-2">
-              {riskItems.map(risk => (
+              {riskItems.map((risk, index) => (
                 <div
                   key={risk.id}
-                  className={`p-3 rounded-lg cursor-pointer transition-all text-sm border ${
+                  className={`p-3 rounded-lg cursor-pointer transition-all duration-300 ease-in-out text-sm border transform hover:scale-102 hover:shadow-md ${
                     activeRisk === risk.id
-                      ? `${risk.riskLevel === 'high' ? 'bg-red-50 border-red-200' : 
-                          risk.riskLevel === 'medium' ? 'bg-yellow-50 border-yellow-200' : 
-                          'bg-green-50 border-green-200'} shadow-sm`
+                      ? `${risk.riskLevel === 'high' ? 'bg-red-50 border-red-200 shadow-md scale-105' : 
+                          risk.riskLevel === 'medium' ? 'bg-yellow-50 border-yellow-200 shadow-md scale-105' : 
+                          'bg-green-50 border-green-200 shadow-md scale-105'}`
                       : `border-gray-100 hover:border-gray-200 hover:bg-gray-50`
                   }`}
                   onClick={() => setActiveRisk(risk.id)}
+                  style={{
+                    animationDelay: `${index * 100}ms`
+                  }}
                 >
                   <div className="flex items-start">
-                    <span className={`inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 ${
+                    <span className={`inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 transition-all duration-200 ${
                       risk.riskLevel === 'high' ? 'bg-red-500' :
                       risk.riskLevel === 'medium' ? 'bg-yellow-500' :
                       'bg-green-500'
-                    }`}></span>
-                    <span className="text-gray-700 leading-tight">{risk.text.substring(0, 50)}...</span>
+                    } ${activeRisk === risk.id ? 'w-3 h-3 mt-1.5' : ''}`}></span>
+                    <span className="text-gray-700 leading-tight transition-colors duration-200">{risk.text.substring(0, 50)}...</span>
                   </div>
                 </div>
               ))}
