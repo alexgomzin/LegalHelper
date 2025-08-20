@@ -19,13 +19,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('ANALYZE TEXT ENDPOINT CALLED');
   
   try {
-    const { text, fileName } = req.body;
+    const { text, fileName, user_id } = req.body;
     
     if (!text) {
       return res.status(400).json({ error: 'No text provided' });
     }
 
-    console.log(`Analyzing text with length: ${text.length}`);
+    console.log(`Analyzing text with length: ${text.length} for user:`, user_id);
 
     // Check if OpenAI API key is configured
     const isOpenAIConfigured = !!process.env.OPENAI_API_KEY;
@@ -201,6 +201,34 @@ You must respond ONLY with a valid JSON object using the following structure:
       } else {
         console.error('Invalid response from OpenAI');
         analysis = getMockAnalysis(text);
+      }
+    }
+
+    // Deduct credit for non-admin users after successful analysis
+    const ADMIN_USER_ID = '971b8cd0-8eb3-4f9b-94b0-34175c432baa';
+    if (user_id && user_id !== ADMIN_USER_ID) {
+      console.log('🎯 Text analysis successful, deducting credit for user:', user_id);
+      try {
+        const useCreditResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/payment/use-credit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id,
+            document_id: `text-${Date.now()}` // Generate unique ID for text analysis
+          })
+        });
+        
+        const useCreditResult = await useCreditResponse.json();
+        if (useCreditResult.success) {
+          console.log('✅ Credit deducted successfully. Remaining:', useCreditResult.credits_remaining);
+        } else {
+          console.error('❌ Failed to deduct credit:', useCreditResult.error);
+        }
+      } catch (creditError) {
+        console.error('❌ Error calling use-credit API:', creditError);
+        // Don't fail the analysis if credit deduction fails
       }
     }
 

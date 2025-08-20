@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 // Admin emails that get unlimited credits
 const ADMIN_EMAILS = ['g0mzinaldo@yandex.ru'];
+
+// Admin user ID that gets unlimited credits
 const ADMIN_USER_ID = '971b8cd0-8eb3-4f9b-94b0-34175c432baa';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

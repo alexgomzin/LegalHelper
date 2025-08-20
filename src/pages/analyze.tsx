@@ -296,6 +296,8 @@ export default function AnalyzePage() {
       }
 
       if (result.success && result.analysis) {
+        console.log('🎉 handleUploadComplete: Analysis successful, processing results');
+        
         // Store results in session storage for future use
         sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
         
@@ -303,9 +305,14 @@ export default function AnalyzePage() {
         await storeAndUpdateResults(fileId, documentName, result.analysis, 'Analyzed')
         
         // Clear credit status cache to refresh the display
+        console.log('📊 Analysis complete, clearing credit cache. User:', user?.id);
         if (user) {
+          console.log('🔄 Calling clearCreditStatusCache for user:', user.id);
           clearCreditStatusCache(user.id)
           setCreditStatusKey(prev => prev + 1) // Force CreditStatus re-render
+          console.log('✅ Credit cache cleared and key incremented');
+        } else {
+          console.error('❌ User not found, cannot clear credit cache');
         }
         
         // Set the analysis results
@@ -435,6 +442,7 @@ export default function AnalyzePage() {
         }
 
         if (result.success && result.analysis) {
+          console.log('🎉 handleTextExtracted: Text analysis successful, processing results');
           // Store results in session storage
           sessionStorage.setItem('analysisResults', JSON.stringify(result.analysis))
           
@@ -442,9 +450,14 @@ export default function AnalyzePage() {
           await storeAndUpdateResults(tempId, documentName, result.analysis, 'Analyzed')
           
           // Clear credit status cache to refresh the display
+          console.log('📊 Text analysis complete, clearing credit cache. User:', user?.id);
           if (user) {
+            console.log('🔄 Calling clearCreditStatusCache for user:', user.id);
             clearCreditStatusCache(user.id)
             setCreditStatusKey(prev => prev + 1) // Force CreditStatus re-render
+            console.log('✅ Credit cache cleared and key incremented');
+          } else {
+            console.error('❌ User not found, cannot clear credit cache');
           }
           
           // Set the analysis results
