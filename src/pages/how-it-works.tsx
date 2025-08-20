@@ -2,10 +2,10 @@
 
 import { useTranslation } from '@/contexts/LanguageContext'
 import { useAuth } from '@/contexts/SupabaseAuthContext'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 export default function HowItWorks() {
   const { t } = useTranslation()
@@ -42,53 +42,134 @@ export default function HowItWorks() {
         </div>
 
         {/* Steps Section */}
-        <div className="bg-white py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-sm font-semibold text-blue-600 tracking-wide uppercase mb-2">{t('howItWorks.simpleProcess')}</h2>
-              <p className="text-3xl font-bold text-gray-900 sm:text-4xl">
+        <div className="bg-white py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-4">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {t('howItWorks.simpleProcess')}
+              </span>
+              <h2 className="text-4xl font-bold text-gray-900 sm:text-5xl mb-6">
                 {t('howItWorks.threeEasySteps')}
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Our streamlined process makes legal document analysis simple, fast, and reliable
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-              {/* Step 1 */}
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-600 text-white">
-                    <span className="text-lg font-bold">1</span>
-                  </div>
+            <div className="relative">
+              {/* Connection Line */}
+              <div className="hidden lg:block absolute top-24 left-1/2 transform -translate-x-1/2 w-full max-w-4xl">
+                <div className="flex justify-between items-center px-20">
+                  <div className="w-32 h-0.5 bg-gradient-to-r from-blue-200 to-indigo-300"></div>
+                  <div className="w-32 h-0.5 bg-gradient-to-r from-indigo-300 to-purple-300"></div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('howItWorks.step1Title')}</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {t('howItWorks.step1Description')}
-                </p>
               </div>
 
-              {/* Step 2 */}
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-600 text-white">
-                    <span className="text-lg font-bold">2</span>
+              <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
+                {/* Step 1 */}
+                <div className="relative group">
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div className="absolute -top-6 left-8">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform duration-300">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                        </div>
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-bold text-blue-600">1</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('howItWorks.step1Title')}</h3>
+                      <p className="text-gray-600 leading-relaxed mb-6">
+                        {t('howItWorks.step1Description')}
+                      </p>
+                      <div className="flex items-center text-blue-600 text-sm font-medium">
+                        <span>Drag & Drop or Click</span>
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('howItWorks.step2Title')}</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {t('howItWorks.step2Description')}
-                </p>
+
+                {/* Step 2 */}
+                <div className="relative group">
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div className="absolute -top-6 left-8">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg flex items-center justify-center transform -rotate-3 group-hover:-rotate-6 transition-transform duration-300">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                        </div>
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-bold text-indigo-600">2</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('howItWorks.step2Title')}</h3>
+                      <p className="text-gray-600 leading-relaxed mb-6">
+                        {t('howItWorks.step2Description')}
+                      </p>
+                      <div className="flex items-center text-indigo-600 text-sm font-medium">
+                        <span>AI Processing</span>
+                        <div className="ml-2 flex space-x-1">
+                          <div className="w-1 h-1 bg-indigo-400 rounded-full animate-pulse"></div>
+                          <div className="w-1 h-1 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-1 h-1 bg-indigo-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="relative group">
+                  <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div className="absolute -top-6 left-8">
+                      <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg flex items-center justify-center transform rotate-3 group-hover:rotate-6 transition-transform duration-300">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-bold text-purple-600">3</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4">{t('howItWorks.step3Title')}</h3>
+                      <p className="text-gray-600 leading-relaxed mb-6">
+                        {t('howItWorks.step3Description')}
+                      </p>
+                      <div className="flex items-center text-purple-600 text-sm font-medium">
+                        <span>Download Results</span>
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Step 3 */}
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-purple-100 mb-6">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-600 text-white">
-                    <span className="text-lg font-bold">3</span>
-                  </div>
+              {/* Bottom CTA */}
+              <div className="text-center mt-16">
+                <div className="inline-flex items-center px-6 py-3 rounded-full bg-gray-50 border border-gray-200">
+                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-gray-700 font-medium">Average analysis time: 30-60 seconds</span>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('howItWorks.step3Title')}</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {t('howItWorks.step3Description')}
-                </p>
               </div>
             </div>
           </div>
