@@ -1,200 +1,135 @@
-import React, { useState } from 'react';
-
-interface RiskItem {
-  id: number;
-  text: string;
-  riskLevel: 'high' | 'medium' | 'low';
-  explanation: string;
-  recommendation: string;
-}
+import React from 'react';
 
 export default function RealisticAnalysisExample() {
-  const [activeRisk, setActiveRisk] = useState<number>(1);
-
-  // Simplified, shorter contract excerpt
-  const contractText = `PAYMENT TERMS
-Client agrees to pay all fees within 30 days of invoice date. Late payments may incur interest charges of 2% per month.
-
-LIABILITY LIMITATION  
-IN NO EVENT SHALL LAW FIRM BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES.
-
-TERMINATION
-Either party may terminate this agreement at any time without cause by providing written notice.
-
-CONFIDENTIALITY
-Both parties agree to maintain confidentiality regarding all matters discussed during this engagement.`;
-
-  // Simplified risk items
-  const riskItems: RiskItem[] = [
-    {
-      id: 1,
-      text: "Late payments may incur interest charges of 2% per month",
-      riskLevel: 'high',
-      explanation: "24% annual interest rate is extremely high and may be legally unenforceable in many jurisdictions.",
-      recommendation: "Negotiate for a lower interest rate (1-1.5% monthly) or request removal of interest charges entirely."
-    },
-    {
-      id: 2,
-      text: "IN NO EVENT SHALL LAW FIRM BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES",
-      riskLevel: 'high',
-      explanation: "Broad liability limitation may prevent recovery even in cases of professional negligence.",
-      recommendation: "Limit this clause to exclude gross negligence, willful misconduct, or professional malpractice."
-    },
-    {
-      id: 3,
-      text: "Either party may terminate this agreement at any time without cause",
-      riskLevel: 'medium',
-      explanation: "Immediate termination without notice period could leave you without representation at critical moments.",
-      recommendation: "Add a reasonable notice period (30 days) except in cases of material breach or emergencies."
-    },
-    {
-      id: 4,
-      text: "Both parties agree to maintain confidentiality",
-      riskLevel: 'low',
-      explanation: "Standard confidentiality clause with no apparent issues, though scope could be more specific.",
-      recommendation: "Consider defining specific types of confidential information and duration of confidentiality obligations."
-    }
-  ];
-
-  // Function to highlight risks in the contract text
-  const getHighlightedText = () => {
-    let highlightedText = contractText;
-    
-    const sortedRisks = [...riskItems].sort((a, b) => b.text.length - a.text.length);
-    
-    sortedRisks.forEach(risk => {
-      const baseColorClass = 
-        risk.riskLevel === 'high' ? 'bg-red-50 text-red-800 border-l-4 border-red-400' :
-        risk.riskLevel === 'medium' ? 'bg-yellow-50 text-yellow-800 border-l-4 border-yellow-400' :
-        'bg-green-50 text-green-800 border-l-4 border-green-400';
-      
-      const isActive = activeRisk === risk.id;
-      const activeClass = isActive ? 
-        (risk.riskLevel === 'high' ? 'bg-red-100 shadow-lg transform scale-105' :
-         risk.riskLevel === 'medium' ? 'bg-yellow-100 shadow-lg transform scale-105' :
-         'bg-green-100 shadow-lg transform scale-105') : '';
-      
-      const hoverClass = 'hover:shadow-md hover:bg-opacity-80 hover:transform hover:scale-102';
-      
-      const highlightSpan = `<span class="px-2 py-1 rounded-r-md cursor-pointer transition-all duration-300 ease-in-out ${baseColorClass} ${activeClass} ${hoverClass}" data-risk-id="${risk.id}">${risk.text}</span>`;
-      highlightedText = highlightedText.replace(risk.text, highlightSpan);
-    });
-    
-    return highlightedText;
-  };
-
-  const activeRiskItem = riskItems.find(risk => risk.id === activeRisk);
-
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-3xl mx-auto border border-gray-100">
-      {/* Simplified header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+    <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl overflow-hidden max-w-4xl mx-auto border border-blue-100">
+      {/* Beautiful header with gradient */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Document Analysis Results
-          </h3>
-          <div className="flex items-center space-x-2 text-sm">
-            <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium text-xs">2 High</span>
-            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium text-xs">1 Medium</span>
-            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium text-xs">1 Low</span>
+          <div className="flex items-center">
+            <div className="bg-white bg-opacity-20 rounded-lg p-2 mr-4">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">Document Analysis</h3>
+              <p className="text-blue-100 text-sm">AI-powered legal review complete</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="bg-red-500 bg-opacity-20 text-red-100 px-3 py-1 rounded-full text-sm font-medium">
+              2 High Risk
+            </div>
+            <div className="bg-yellow-500 bg-opacity-20 text-yellow-100 px-3 py-1 rounded-full text-sm font-medium">
+              1 Medium Risk
+            </div>
+            <div className="bg-green-500 bg-opacity-20 text-green-100 px-3 py-1 rounded-full text-sm font-medium">
+              Issues Found
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Document Text - more space */}
-          <div className="lg:col-span-3">
-            <h4 className="text-sm font-medium text-gray-600 mb-3 uppercase tracking-wide">Contract Excerpt</h4>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div 
-                className="text-sm leading-relaxed text-gray-800 whitespace-pre-line"
-                dangerouslySetInnerHTML={{ __html: getHighlightedText() }}
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  const riskId = target.getAttribute('data-risk-id');
-                  if (riskId) {
-                    setActiveRisk(parseInt(riskId));
-                  }
-                }}
-              />
+      <div className="p-8">
+        {/* Main content area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Document preview */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Contract Analysis</h4>
+            
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="space-y-4 text-sm text-gray-700 leading-relaxed">
+                <p>
+                  <span className="font-medium">PAYMENT TERMS:</span><br/>
+                  Client agrees to pay all fees within 30 days. 
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded-md mx-1 font-medium">
+                    Late payments incur 2% monthly interest
+                  </span>
+                  charges may apply.
+                </p>
+                
+                <p>
+                  <span className="font-medium">LIABILITY:</span><br/>
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded-md font-medium">
+                    Law firm not liable for any damages
+                  </span>
+                  regardless of circumstances.
+                </p>
+                
+                <p>
+                  <span className="font-medium">TERMINATION:</span><br/>
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md font-medium">
+                    Either party may terminate immediately
+                  </span>
+                  without cause or notice period.
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2 italic">Click on highlighted text to see risk analysis</p>
           </div>
 
-          {/* Risk Analysis Panel - compact */}
-          <div className="lg:col-span-2">
-            <h4 className="text-sm font-medium text-gray-600 mb-3 uppercase tracking-wide">Risk Analysis</h4>
+          {/* Analysis results */}
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Risk Assessment</h4>
             
-            {activeRiskItem && (
-              <div className="mb-4 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ease-in-out">
-                <div className="p-4">
-                  <div className="flex items-center mb-3">
-                    <span className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                      activeRiskItem.riskLevel === 'high' ? 'bg-red-500' :
-                      activeRiskItem.riskLevel === 'medium' ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    }`}></span>
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {activeRiskItem.riskLevel} Risk
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <h5 className="text-xs font-semibold text-red-700 mb-1 uppercase tracking-wide">Risk Analysis:</h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">{activeRiskItem.explanation}</p>
-                    </div>
-                    
-                    <div className="pt-2 border-t border-gray-100">
-                      <h5 className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">Recommendation:</h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">{activeRiskItem.recommendation}</p>
-                    </div>
-                  </div>
-                </div>
+            {/* High risk item */}
+            <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-5 border-l-4 border-red-400">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span className="text-red-800 font-semibold text-sm uppercase tracking-wide">High Risk</span>
               </div>
-            )}
+              <h5 className="font-semibold text-red-900 mb-2">Excessive Interest Rate</h5>
+              <p className="text-red-800 text-sm leading-relaxed">
+                24% annual interest rate may be legally unenforceable and considered predatory.
+              </p>
+            </div>
 
-            <div className="space-y-2">
-              {riskItems.map((risk, index) => (
-                <div
-                  key={risk.id}
-                  className={`p-3 rounded-lg cursor-pointer transition-all duration-300 ease-in-out text-sm border transform hover:scale-102 hover:shadow-md ${
-                    activeRisk === risk.id
-                      ? `${risk.riskLevel === 'high' ? 'bg-red-50 border-red-200 shadow-md scale-105' : 
-                          risk.riskLevel === 'medium' ? 'bg-yellow-50 border-yellow-200 shadow-md scale-105' : 
-                          'bg-green-50 border-green-200 shadow-md scale-105'}`
-                      : `border-gray-100 hover:border-gray-200 hover:bg-gray-50`
-                  }`}
-                  onClick={() => setActiveRisk(risk.id)}
-                  style={{
-                    animationDelay: `${index * 100}ms`
-                  }}
-                >
-                  <div className="flex items-start">
-                    <span className={`inline-block w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 transition-all duration-200 ${
-                      risk.riskLevel === 'high' ? 'bg-red-500' :
-                      risk.riskLevel === 'medium' ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    } ${activeRisk === risk.id ? 'w-3 h-3 mt-1.5' : ''}`}></span>
-                    <span className="text-gray-700 leading-tight transition-colors duration-200">{risk.text.substring(0, 50)}...</span>
-                  </div>
-                </div>
-              ))}
+            {/* Medium risk item */}
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-5 border-l-4 border-yellow-400">
+              <div className="flex items-center mb-3">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <span className="text-yellow-800 font-semibold text-sm uppercase tracking-wide">Medium Risk</span>
+              </div>
+              <h5 className="font-semibold text-yellow-900 mb-2">Immediate Termination</h5>
+              <p className="text-yellow-800 text-sm leading-relaxed">
+                No notice period required could leave you without legal representation unexpectedly.
+              </p>
+            </div>
+
+            {/* Summary card */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200">
+              <div className="flex items-center mb-3">
+                <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-blue-800 font-semibold">Analysis Summary</span>
+              </div>
+              <p className="text-blue-700 text-sm leading-relaxed">
+                Document contains <strong>3 significant issues</strong> requiring attention before signing. 
+                Consider negotiating terms or seeking legal counsel.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Simplified bottom info */}
-        <div className="mt-6 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-center text-sm text-gray-600">
-            <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Interactive analysis - click highlighted text to explore risks</span>
+        {/* Bottom action area */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-gray-600">
+              <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm">Analysis completed in 45 seconds</span>
+            </div>
+            <div className="flex space-x-3">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                Download Report
+              </button>
+              <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
+                View Details
+              </button>
+            </div>
           </div>
         </div>
       </div>
