@@ -358,28 +358,20 @@ You must respond ONLY with a valid JSON object using the following structure:
     console.log('🔍 Condition check: user_id && user_id !== ADMIN_USER_ID =', !!(user_id && user_id !== ADMIN_USER_ID));
     
     // Deduct credit for non-admin users after successful analysis
-    if (user_id && user_id !== ADMIN_USER_ID) {
+    if (user_id) {
       console.log('🎯 Analysis successful, deducting credit for user:', user_id);
       try {
-        const useCreditResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/payment/use-credit`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id,
-            document_id: fileId
-          })
-        });
+        // Import and call the function directly instead of HTTP request
+        const { deductCredit } = await import('./payment/use-credit');
+        const useCreditResult = await deductCredit(user_id, fileId);
         
-        const useCreditResult = await useCreditResponse.json();
         if (useCreditResult.success) {
           console.log('✅ Credit deducted successfully. Remaining:', useCreditResult.credits_remaining);
         } else {
           console.error('❌ Failed to deduct credit:', useCreditResult.error);
         }
       } catch (creditError) {
-        console.error('❌ Error calling use-credit API:', creditError);
+        console.error('❌ Error calling deductCredit function:', creditError);
         // Don't fail the analysis if credit deduction fails
       }
     }
