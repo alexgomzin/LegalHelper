@@ -352,6 +352,11 @@ You must respond ONLY with a valid JSON object using the following structure:
 
     clearRequestTimeout(); // Clear timeout before sending response
     
+    console.log('🔍 DEBUGGING: About to check credit deduction conditions');
+    console.log('🔍 user_id:', user_id);
+    console.log('🔍 ADMIN_USER_ID:', ADMIN_USER_ID);
+    console.log('🔍 Condition check: user_id && user_id !== ADMIN_USER_ID =', !!(user_id && user_id !== ADMIN_USER_ID));
+    
     // Deduct credit for non-admin users after successful analysis
     if (user_id && user_id !== ADMIN_USER_ID) {
       console.log('🎯 Analysis successful, deducting credit for user:', user_id);

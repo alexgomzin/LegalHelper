@@ -75,6 +75,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     });
 
+    // Extract user_id from fields
+    const user_id = fields.user_id?.[0] as string | undefined;
+    console.log('Upload request - user_id:', user_id);
+    
     // Check if we have a document file
     const file = files.document?.[0] as File | undefined;
     
@@ -376,6 +380,34 @@ You must respond ONLY with a valid JSON object using the following structure:
       
       console.log('Analysis complete, returning results with the upload response');
       clearRequestTimeout(); // Clear timeout before sending success response
+      // Deduct credit for non-admin users after successful analysis
+      const ADMIN_USER_ID = '971b8cd0-8eb3-4f9b-94b0-34175c432baa';
+      if (user_id && user_id !== ADMIN_USER_ID) {
+        console.log('🎯 Upload analysis successful, deducting credit for user:', user_id);
+        try {
+          const useCreditResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/payment/use-credit`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id,
+              document_id: id
+            })
+          });
+          
+          const useCreditResult = await useCreditResponse.json();
+          if (useCreditResult.success) {
+            console.log('✅ Credit deducted successfully. Remaining:', useCreditResult.credits_remaining);
+          } else {
+            console.error('❌ Failed to deduct credit:', useCreditResult.error);
+          }
+        } catch (creditError) {
+          console.error('❌ Error calling use-credit API:', creditError);
+          // Don't fail the analysis if credit deduction fails
+        }
+      }
+
       return res.status(200).json({
         success: true,
         fileId: id,

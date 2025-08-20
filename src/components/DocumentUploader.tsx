@@ -5,6 +5,7 @@ import axios from 'axios'
 import { addDocument } from '@/utils/documentUtils'
 import { useTranslation } from '@/contexts/LanguageContext'
 import { trackPdfSelectClick } from '@/utils/gtag'
+import { useAuth } from '@/contexts/SupabaseAuthContext'
 
 interface DocumentUploaderProps {
   onUploadStart: () => void
@@ -24,6 +25,7 @@ export default function DocumentUploader({
   disabled = false
 }: DocumentUploaderProps) {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -95,6 +97,9 @@ export default function DocumentUploader({
       // Create FormData
       const formData = new FormData()
       formData.append('document', file)
+      if (user?.id) {
+        formData.append('user_id', user.id)
+      }
       
       // Use a single endpoint for uploading files
       const endpoint = '/api/upload'

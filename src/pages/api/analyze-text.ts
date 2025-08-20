@@ -204,6 +204,11 @@ You must respond ONLY with a valid JSON object using the following structure:
       }
     }
 
+    console.log('🔍 TEXT ANALYSIS DEBUGGING: About to check credit deduction conditions');
+    console.log('🔍 user_id:', user_id);
+    console.log('🔍 ADMIN_USER_ID (text):', '971b8cd0-8eb3-4f9b-94b0-34175c432baa');
+    console.log('🔍 Condition check (text): user_id && user_id !== ADMIN_USER_ID =', !!(user_id && user_id !== '971b8cd0-8eb3-4f9b-94b0-34175c432baa'));
+    
     // Deduct credit for non-admin users after successful analysis
     const ADMIN_USER_ID = '971b8cd0-8eb3-4f9b-94b0-34175c432baa';
     if (user_id && user_id !== ADMIN_USER_ID) {
