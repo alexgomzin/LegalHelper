@@ -40,7 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('PAGES ROUTER UPLOAD ENDPOINT CALLED');
+  console.log('🔥🔥🔥 PAGES ROUTER UPLOAD ENDPOINT CALLED 🔥🔥🔥');
+  console.log('📋 Request method:', req.method);
+  console.log('📋 Content-Type:', req.headers['content-type']);
   
   // Set a timeout to ensure the request doesn't hang
   let requestTimeout: NodeJS.Timeout | null = setTimeout(() => {
@@ -77,7 +79,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Extract user_id from fields
     const user_id = fields.user_id?.[0] as string | undefined;
-    console.log('Upload request - user_id:', user_id);
+    console.log('🆔 Upload request - user_id:', user_id);
+    console.log('📝 All fields:', Object.keys(fields));
+    console.log('📁 All files:', Object.keys(files));
     
     // Check if we have a document file
     const file = files.document?.[0] as File | undefined;

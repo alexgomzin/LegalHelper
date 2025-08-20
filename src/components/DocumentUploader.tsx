@@ -97,8 +97,12 @@ export default function DocumentUploader({
       // Create FormData
       const formData = new FormData()
       formData.append('document', file)
+      console.log('🆔 Current user:', user?.id);
       if (user?.id) {
         formData.append('user_id', user.id)
+        console.log('✅ Added user_id to FormData:', user.id);
+      } else {
+        console.error('❌ No user_id available for upload!');
       }
       
       // Use a single endpoint for uploading files
