@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 import Image from 'next/image'
 import { useState, useRef } from 'react'
+import RealisticAnalysisExample from '@/components/RealisticAnalysisExample'
 import { trackGetStartedClick } from '@/utils/gtag'
 
 export default function Home() {
@@ -55,62 +56,8 @@ export default function Home() {
             </div>
             
             <div className="md:w-1/2 flex justify-center">
-              <div className="relative bg-white p-2 rounded-lg shadow-2xl transform hover:-translate-y-1 transition-transform duration-300">
-                <div className="w-full max-w-lg bg-white rounded-md overflow-hidden">
-                  <div className="h-8 bg-gray-100 flex items-center px-4">
-                    <div className="flex space-x-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-lg font-bold text-gray-800">{t('home.analysisResultsTitle')}</div>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <div className="mb-2 text-sm font-semibold text-gray-700">{t('home.riskOverview')}</div>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <div className="w-20 h-4 bg-red-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-red-500 w-1/4"></div>
-                        </div>
-                        <span className="text-xs text-gray-600">{t('home.highRisksCount')}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <div className="w-20 h-4 bg-yellow-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-yellow-500 w-1/2"></div>
-                        </div>
-                        <span className="text-xs text-gray-600">{t('home.mediumRisksCount')}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-20 h-4 bg-green-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500 w-3/4"></div>
-                        </div>
-                        <span className="text-xs text-gray-600">{t('home.lowRisksCount')}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="border-t pt-4">
-                      <div className="mb-3 text-sm font-semibold text-gray-700">{t('home.topConcerns')}</div>
-                      
-                      <div className="border-l-4 border-red-500 pl-3 py-2 mb-3">
-                        <div className="text-sm font-medium text-gray-800">{t('home.terminationClause')}</div>
-                        <div className="text-xs text-gray-600">{t('home.terminationIssue')}</div>
-                      </div>
-                      
-                      <div className="border-l-4 border-red-500 pl-3 py-2 mb-3">
-                        <div className="text-sm font-medium text-gray-800">{t('home.liabilityLimitation')}</div>
-                        <div className="text-xs text-gray-600">{t('home.liabilityIssue')}</div>
-                      </div>
-                      
-                      <div className="border-l-4 border-yellow-500 pl-3 py-2">
-                        <div className="text-sm font-medium text-gray-800">{t('home.paymentTerms')}</div>
-                        <div className="text-xs text-gray-600">{t('home.paymentIssue')}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="transform hover:-translate-y-1 transition-transform duration-300 w-full max-w-2xl">
+                <RealisticAnalysisExample />
               </div>
             </div>
           </div>

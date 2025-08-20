@@ -10,6 +10,7 @@ import AnalysisResults from '@/components/AnalysisResults'
 import ScannedPdfProcessor from '@/components/ScannedPdfProcessor'
 import CreditStatus from '@/components/CreditStatus'
 import AnalysisProgressIndicator from '@/components/AnalysisProgressIndicator'
+import FullscreenProgressIndicator from '@/components/FullscreenProgressIndicator'
 import { useTranslation } from '@/contexts/LanguageContext'
 import { processPDF } from '@/utils/pdfProcessing'
 import { updateDocumentStatus, storeAnalysisResults, addDocument } from '@/utils/documentUtils'
@@ -567,25 +568,15 @@ export default function AnalyzePage() {
           </div>
         )}
 
-        {/* Progress indicators moved to top for better visibility */}
-        {isUploading && !needsClientProcessing && (
+        {/* Show small progress indicator only when not using fullscreen mode */}
+        {needsClientProcessing && (
           <div className="mb-8">
-            <h3 className="text-lg font-medium mb-2">{t('analyze.uploadingDocument')}</h3>
+            <h3 className="text-lg font-medium mb-2">{t('analyze.processingDocument')}</h3>
             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
+              <div className="bg-yellow-500 h-2.5 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-gray-500">{t('analyze.uploadingMessage')}</p>
+            <p className="text-gray-500">{t('analyze.clientProcessingMessage')}</p>
           </div>
-        )}
-        
-        {!needsClientProcessing && (
-          <AnalysisProgressIndicator 
-            isAnalyzing={isAnalyzing}
-            duration={45000} // 45 seconds expected duration
-          />
         )}
 
         {uploadStatus === 'idle' && (
@@ -678,6 +669,19 @@ export default function AnalyzePage() {
           </div>
         )}
       </div>
+
+      {/* Fullscreen Progress Indicator */}
+      <FullscreenProgressIndicator
+        isVisible={(isUploading && !needsClientProcessing) || isAnalyzing}
+        isUploading={isUploading && !needsClientProcessing}
+        uploadProgress={uploadProgress}
+        isAnalyzing={isAnalyzing}
+        duration={45000} // 45 seconds expected duration
+        onComplete={() => {
+          // This will be called when analysis is complete and the completion message has been shown
+          console.log('Fullscreen progress indicator completed');
+        }}
+      />
 
       {/* Legal Links Footer */}
       <footer className="mt-16 py-8 border-t border-gray-200">
