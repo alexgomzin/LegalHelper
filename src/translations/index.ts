@@ -499,6 +499,8 @@ const translations = {
       // Footer
       analyzedIn: 'Analyzed in 18 seconds',
       tryNow: 'Try Now',
+      startAnalysis: 'Start Analysis',
+      signInToAnalyze: 'Sign In to Analyze',
       closeDetails: 'Close Details'
     }
   },
@@ -1002,6 +1004,8 @@ const translations = {
       // Footer
       analyzedIn: 'Проверено за 18 сек',
       tryNow: 'Попробовать',
+      startAnalysis: 'Начать анализ',
+      signInToAnalyze: 'Войти для анализа',
       closeDetails: 'Закрыть детали'
     }
   },
@@ -1505,6 +1509,8 @@ const translations = {
       // Footer
       analyzedIn: 'Analysiert in 18 Sekunden',
       tryNow: 'Jetzt testen',
+      startAnalysis: 'Analyse starten',
+      signInToAnalyze: 'Anmelden für Analyse',
       closeDetails: 'Details schließen'
     }
   },
@@ -2008,6 +2014,8 @@ const translations = {
       // Footer
       analyzedIn: 'Analizado en 18 segundos',
       tryNow: 'Probar Ahora',
+      startAnalysis: 'Iniciar Análisis',
+      signInToAnalyze: 'Iniciar Sesión para Analizar',
       closeDetails: 'Cerrar Detalles'
     }
   },
@@ -2511,6 +2519,8 @@ const translations = {
       // Footer
       analyzedIn: '18 saniyede analiz edildi',
       tryNow: 'Şimdi Dene',
+      startAnalysis: 'Analizi Başlat',
+      signInToAnalyze: 'Analiz için Giriş Yap',
       closeDetails: 'Detayları Kapat'
     }
   }

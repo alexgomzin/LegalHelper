@@ -1,11 +1,29 @@
 import React, { useState } from 'react';
 import { useTranslation } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useRouter } from 'next/router';
+import { trackGetStartedClick } from '@/utils/gtag';
 
 export default function RealisticAnalysisExample() {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [selectedRisk, setSelectedRisk] = useState<string | null>(null);
 
   const closeModal = () => setSelectedRisk(null);
+
+  const handleTryNowClick = () => {
+    // Трекинг клика для аналитики
+    trackGetStartedClick();
+    
+    if (isAuthenticated) {
+      // Пользователь авторизован - перенаправляем на страницу анализа
+      router.push('/analyze');
+    } else {
+      // Пользователь не авторизован - перенаправляем на страницу входа
+      router.push('/login');
+    }
+  };
 
   return (
     <>
@@ -169,8 +187,11 @@ export default function RealisticAnalysisExample() {
               </svg>
               <span className="text-xs">{t('analysisExample.analyzedIn')}</span>
             </div>
-            <button className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 transition-colors">
-              {t('analysisExample.tryNow')}
+            <button 
+              onClick={handleTryNowClick}
+              className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 transition-colors"
+            >
+              {isAuthenticated ? t('analysisExample.startAnalysis') : t('analysisExample.signInToAnalyze')}
             </button>
           </div>
         </div>
