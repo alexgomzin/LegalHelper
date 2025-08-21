@@ -441,6 +441,65 @@ const translations = {
       passwordsDoNotMatch: 'New passwords do not match',
       passwordTooShort: 'Password must be at least 6 characters long',
       failedToUpdate: 'Failed to update'
+    },
+    
+    // Analysis Example Component
+    analysisExample: {
+      title: 'Office Lease Agreement',
+      documentType: 'Legal Document Analysis',
+      aiReviewComplete: 'AI Review Complete',
+      riskAnalysis: 'Risk Analysis',
+      recommendations: 'Recommendations',
+      
+      // Contract clauses
+      clause1: 'Section 4.2: "Tenant must pay rent by the 1st of each month without prior notice."',
+      clause2: 'Section 6.1: "Landlord is not responsible for tenant property security in the premises."',
+      clause3: 'Section 8.3: "Agreement may be terminated unilaterally by landlord with 10 days notice."',
+      clause4: 'Section 3.1: "Monthly rent includes basic utilities and building maintenance services."',
+      
+      // Risk highlights
+      prepaymentNoGuarantees: 'prepayment without guarantees',
+      noLiabilityForProperty: 'no liability for property',
+      shortNotice: '10 days notice only',
+      includesUtilities: 'utilities included',
+      
+      // Risk levels
+      highRisk: 'High Risk',
+      critical: 'Critical',
+      caution: 'Caution',
+      lowRisk: 'Low Risk',
+      
+      // Risk descriptions
+      highRiskDesc: 'Prepayment without guarantees. Late payment by 1 day may result in contract termination with deposit loss.',
+      criticalDesc: 'Liability waiver. In case of theft or property damage, landlord will not compensate losses.',
+      cautionDesc: 'Short notice period. 10 days insufficient for finding new office and relocating.',
+      lowRiskDesc: 'Utilities included in rent. Clear cost structure with no hidden utility fees.',
+      
+      // Detailed explanations (for modal)
+      highRiskTitle: 'Prepayment Risk',
+      highRiskExplanation: 'This clause requires payment before the 1st of each month without any grace period. This puts significant financial pressure on the tenant and provides no protection against early termination.',
+      highRiskRecommendation: 'Negotiate a 5-day grace period and request deposit protection clauses. Consider adding a clause that requires written notice before termination for late payment.',
+      
+      criticalTitle: 'Property Security Risk',
+      criticalExplanation: 'The landlord completely disclaims responsibility for tenant property security. This means if equipment, documents, or other valuables are stolen or damaged, you have no recourse.',
+      criticalRecommendation: 'Add property insurance requirements for the landlord or negotiate shared security responsibilities. Consider requiring security measures like cameras, locks, or security systems.',
+      
+      cautionTitle: 'Termination Notice Risk',
+      cautionExplanation: 'Ten days is insufficient time to find alternative office space, coordinate moving logistics, and maintain business continuity. This creates significant operational risk.',
+      cautionRecommendation: 'Negotiate for 30-day minimum notice period. Add clauses requiring specific reasons for termination and dispute resolution procedures.',
+      
+      lowRiskTitle: 'Utility Cost Clarity',
+      lowRiskExplanation: 'Having utilities included in rent provides cost predictability and eliminates surprise utility bills. This is generally favorable for budgeting purposes.',
+      lowRiskRecommendation: 'Confirm which specific utilities are included and any usage limitations. Consider adding clauses about utility service interruptions.',
+      
+      // Summary
+      summaryTitle: '4 key points require attention',
+      summaryDesc: 'Contract contains significant risks. Recommend negotiating notice period to 30 days and adding property insurance requirements.',
+      
+      // Footer
+      analyzedIn: 'Analyzed in 18 seconds',
+      tryNow: 'Try Now',
+      closeDetails: 'Close Details'
     }
   },
   ru: {
@@ -882,9 +941,68 @@ const translations = {
       updating: 'Updating...',
       profileUpdated: 'Profile updated successfully!',
       passwordUpdated: 'Password updated successfully!',
-      passwordsDoNotMatch: 'New passwords do not match',
-      passwordTooShort: 'Password must be at least 6 characters long',
-      failedToUpdate: 'Failed to update'
+      passwordsDoNotMatch: 'Новые пароли не совпадают',
+      passwordTooShort: 'Пароль должен содержать минимум 6 символов',
+      failedToUpdate: 'Не удалось обновить'
+    },
+    
+    // Analysis Example Component
+    analysisExample: {
+      title: 'Договор аренды офисного помещения',
+      documentType: 'Анализ юридического документа',
+      aiReviewComplete: 'ИИ анализ завершен',
+      riskAnalysis: 'Анализ рисков',
+      recommendations: 'Рекомендации',
+      
+      // Contract clauses
+      clause1: 'Пункт 4.2: "Арендатор обязуется вносить арендную плату до 1 числа каждого месяца без предварительного уведомления."',
+      clause2: 'Пункт 6.1: "Арендодатель не несет ответственности за сохранность имущества арендатора в помещении."',
+      clause3: 'Пункт 8.3: "Договор может быть расторгнут арендодателем в одностороннем порядке с уведомлением за 10 дней."',
+      clause4: 'Пункт 3.1: "Ежемесячная арендная плата включает коммунальные услуги и обслуживание здания."',
+      
+      // Risk highlights
+      prepaymentNoGuarantees: 'предоплата без гарантий',
+      noLiabilityForProperty: 'нет ответственности за имущество',
+      shortNotice: 'уведомление за 10 дней',
+      includesUtilities: 'включены коммунальные услуги',
+      
+      // Risk levels
+      highRisk: 'Высокий риск',
+      critical: 'Критично',
+      caution: 'Внимание',
+      lowRisk: 'Низкий риск',
+      
+      // Risk descriptions
+      highRiskDesc: 'Предоплата без гарантий. При задержке платежа на 1 день возможно расторжение договора с потерей залога.',
+      criticalDesc: 'Отказ от ответственности. При краже или порче имущества арендодатель не возместит ущерб.',
+      cautionDesc: 'Короткий срок уведомления. 10 дней недостаточно для поиска нового офиса и переезда.',
+      lowRiskDesc: 'Коммунальные услуги включены в арендную плату. Четкая структура затрат без скрытых платежей.',
+      
+      // Detailed explanations (for modal)
+      highRiskTitle: 'Риск предоплаты',
+      highRiskExplanation: 'Данный пункт требует оплаты до 1 числа каждого месяца без льготного периода. Это создает значительное финансовое давление на арендатора и не предоставляет защиты от досрочного расторжения.',
+      highRiskRecommendation: 'Договоритесь о 5-дневном льготном периоде и запросите пункты о защите депозита. Рассмотрите добавление пункта о необходимости письменного уведомления перед расторжением за просрочку.',
+      
+      criticalTitle: 'Риск безопасности имущества',
+      criticalExplanation: 'Арендодатель полностью отказывается от ответственности за безопасность имущества арендатора. Это означает, что при краже оборудования, документов или других ценностей у вас нет права на возмещение.',
+      criticalRecommendation: 'Добавьте требования к страхованию имущества со стороны арендодателя или договоритесь о разделенной ответственности за безопасность. Рассмотрите требования к мерам безопасности: камеры, замки, охранные системы.',
+      
+      cautionTitle: 'Риск уведомления о расторжении',
+      cautionExplanation: 'Десять дней недостаточно для поиска альтернативного офисного помещения, координации переезда и поддержания непрерывности бизнеса. Это создает значительный операционный риск.',
+      cautionRecommendation: 'Договоритесь о минимальном 30-дневном периоде уведомления. Добавьте пункты о необходимости конкретных причин для расторжения и процедурах разрешения споров.',
+      
+      lowRiskTitle: 'Ясность коммунальных расходов',
+      lowRiskExplanation: 'Включение коммунальных услуг в арендную плату обеспечивает предсказуемость расходов и исключает неожиданные счета за коммунальные услуги. Это обычно выгодно для планирования бюджета.',
+      lowRiskRecommendation: 'Подтвердите, какие конкретно коммунальные услуги включены и есть ли ограничения по использованию. Рассмотрите добавление пунктов о перебоях в коммунальных услугах.',
+      
+      // Summary
+      summaryTitle: '4 ключевых пункта требуют внимания',
+      summaryDesc: 'Договор содержит значительные риски. Рекомендуем увеличить срок уведомления до 30 дней и добавить требования к страхованию имущества.',
+      
+      // Footer
+      analyzedIn: 'Проверено за 18 сек',
+      tryNow: 'Попробовать',
+      closeDetails: 'Закрыть детали'
     }
   },
   de: {
@@ -1329,6 +1447,65 @@ const translations = {
       passwordsDoNotMatch: 'Neue Passwörter stimmen nicht überein',
       passwordTooShort: 'Passwort muss mindestens 6 Zeichen lang sein',
       failedToUpdate: 'Aktualisierung fehlgeschlagen'
+    },
+    
+    // Analysis Example Component
+    analysisExample: {
+      title: 'Büromietvertrag',
+      documentType: 'Rechtsdokument-Analyse',
+      aiReviewComplete: 'KI-Überprüfung abgeschlossen',
+      riskAnalysis: 'Risikoanalyse',
+      recommendations: 'Empfehlungen',
+      
+      // Contract clauses
+      clause1: 'Abschnitt 4.2: "Der Mieter ist verpflichtet, die Miete bis zum 1. jeden Monats ohne Vorankündigung zu zahlen."',
+      clause2: 'Abschnitt 6.1: "Der Vermieter ist nicht für die Sicherheit des Mietereigentums in den Räumlichkeiten verantwortlich."',
+      clause3: 'Abschnitt 8.3: "Der Vertrag kann vom Vermieter einseitig mit 10-tägiger Kündigungsfrist gekündigt werden."',
+      clause4: 'Abschnitt 3.1: "Die monatliche Miete beinhaltet Nebenkosten und Gebäudewartungsleistungen."',
+      
+      // Risk highlights
+      prepaymentNoGuarantees: 'Vorauszahlung ohne Garantien',
+      noLiabilityForProperty: 'keine Haftung für Eigentum',
+      shortNotice: 'nur 10 Tage Kündigungsfrist',
+      includesUtilities: 'Nebenkosten inbegriffen',
+      
+      // Risk levels
+      highRisk: 'Hohes Risiko',
+      critical: 'Kritisch',
+      caution: 'Vorsicht',
+      lowRisk: 'Geringes Risiko',
+      
+      // Risk descriptions
+      highRiskDesc: 'Vorauszahlung ohne Garantien. Verspätete Zahlung um 1 Tag kann zur Vertragsauflösung mit Kautionsverlust führen.',
+      criticalDesc: 'Haftungsausschluss. Bei Diebstahl oder Sachschäden erstattet der Vermieter keine Verluste.',
+      cautionDesc: 'Kurze Kündigungsfrist. 10 Tage sind unzureichend für die Suche nach einem neuen Büro und den Umzug.',
+      lowRiskDesc: 'Nebenkosten in der Miete enthalten. Klare Kostenstruktur ohne versteckte Nebenkosten.',
+      
+      // Detailed explanations (for modal)
+      highRiskTitle: 'Vorauszahlungsrisiko',
+      highRiskExplanation: 'Diese Klausel verlangt eine Zahlung vor dem 1. jeden Monats ohne Kulanzfrist. Dies setzt den Mieter unter erheblichen finanziellen Druck und bietet keinen Schutz vor vorzeitiger Kündigung.',
+      highRiskRecommendation: 'Verhandeln Sie eine 5-tägige Kulanzfrist und fordern Sie Kautionsschutzklauseln an. Erwägen Sie eine Klausel, die eine schriftliche Kündigung vor Beendigung wegen Zahlungsverzug verlangt.',
+      
+      criticalTitle: 'Eigentumssicherheitsrisiko',
+      criticalExplanation: 'Der Vermieter lehnt jede Verantwortung für die Sicherheit des Mietereigentums vollständig ab. Das bedeutet, wenn Ausrüstung, Dokumente oder andere Wertgegenstände gestohlen oder beschädigt werden, haben Sie keine Handhabe.',
+      criticalRecommendation: 'Fügen Sie Eigentumsversicherungsanforderungen für den Vermieter hinzu oder verhandeln Sie geteilte Sicherheitsverantwortlichkeiten. Erwägen Sie Sicherheitsmaßnahmen wie Kameras, Schlösser oder Alarmanlagen.',
+      
+      cautionTitle: 'Kündigungsbenachrichtigungsrisiko',
+      cautionExplanation: 'Zehn Tage sind unzureichend, um alternative Büroräume zu finden, Umzugslogistik zu koordinieren und die Geschäftskontinuität aufrechtzuerhalten. Dies schafft erhebliches operatives Risiko.',
+      cautionRecommendation: 'Verhandeln Sie eine mindestens 30-tägige Kündigungsfrist. Fügen Sie Klauseln hinzu, die spezifische Gründe für die Kündigung und Streitbeilegungsverfahren verlangen.',
+      
+      lowRiskTitle: 'Klarheit der Nebenkosten',
+      lowRiskExplanation: 'Die Einbeziehung der Nebenkosten in die Miete bietet Kostenvorhersagbarkeit und eliminiert überraschende Nebenkostenabrechnungen. Dies ist generell vorteilhaft für die Budgetplanung.',
+      lowRiskRecommendation: 'Bestätigen Sie, welche spezifischen Nebenkosten enthalten sind und ob es Nutzungsbeschränkungen gibt. Erwägen Sie Klauseln über Unterbrechungen der Versorgungsleistungen.',
+      
+      // Summary
+      summaryTitle: '4 wichtige Punkte erfordern Aufmerksamkeit',
+      summaryDesc: 'Der Vertrag enthält erhebliche Risiken. Empfehlung: Kündigungsfrist auf 30 Tage verlängern und Eigentumsversicherungsanforderungen hinzufügen.',
+      
+      // Footer
+      analyzedIn: 'Analysiert in 18 Sekunden',
+      tryNow: 'Jetzt testen',
+      closeDetails: 'Details schließen'
     }
   },
   es: {
@@ -1773,6 +1950,65 @@ const translations = {
       passwordsDoNotMatch: 'Las nuevas contraseñas no coinciden',
       passwordTooShort: 'La contraseña debe tener al menos 6 caracteres',
       failedToUpdate: 'No se pudo actualizar'
+    },
+    
+    // Analysis Example Component
+    analysisExample: {
+      title: 'Contrato de Arrendamiento de Oficina',
+      documentType: 'Análisis de Documento Legal',
+      aiReviewComplete: 'Revisión IA Completa',
+      riskAnalysis: 'Análisis de Riesgos',
+      recommendations: 'Recomendaciones',
+      
+      // Contract clauses
+      clause1: 'Sección 4.2: "El arrendatario debe pagar la renta antes del día 1 de cada mes sin previo aviso."',
+      clause2: 'Sección 6.1: "El arrendador no es responsable de la seguridad de la propiedad del arrendatario en las instalaciones."',
+      clause3: 'Sección 8.3: "El contrato puede ser terminado unilateralmente por el arrendador con 10 días de aviso."',
+      clause4: 'Sección 3.1: "La renta mensual incluye servicios públicos básicos y mantenimiento del edificio."',
+      
+      // Risk highlights
+      prepaymentNoGuarantees: 'prepago sin garantías',
+      noLiabilityForProperty: 'sin responsabilidad por propiedad',
+      shortNotice: 'solo 10 días de aviso',
+      includesUtilities: 'servicios incluidos',
+      
+      // Risk levels
+      highRisk: 'Alto Riesgo',
+      critical: 'Crítico',
+      caution: 'Precaución',
+      lowRisk: 'Bajo Riesgo',
+      
+      // Risk descriptions
+      highRiskDesc: 'Prepago sin garantías. El pago tardío por 1 día puede resultar en terminación del contrato con pérdida del depósito.',
+      criticalDesc: 'Exención de responsabilidad. En caso de robo o daño a la propiedad, el arrendador no compensará las pérdidas.',
+      cautionDesc: 'Período de aviso corto. 10 días insuficientes para encontrar nueva oficina y mudarse.',
+      lowRiskDesc: 'Servicios incluidos en la renta. Estructura de costos clara sin tarifas ocultas de servicios.',
+      
+      // Detailed explanations (for modal)
+      highRiskTitle: 'Riesgo de Prepago',
+      highRiskExplanation: 'Esta cláusula requiere pago antes del día 1 de cada mes sin período de gracia. Esto pone presión financiera significativa en el arrendatario y no proporciona protección contra terminación temprana.',
+      highRiskRecommendation: 'Negocie un período de gracia de 5 días y solicite cláusulas de protección del depósito. Considere agregar una cláusula que requiera aviso por escrito antes de la terminación por pago tardío.',
+      
+      criticalTitle: 'Riesgo de Seguridad de Propiedad',
+      criticalExplanation: 'El arrendador rechaza completamente la responsabilidad por la seguridad de la propiedad del arrendatario. Esto significa que si el equipo, documentos u otros objetos de valor son robados o dañados, no tiene recurso.',
+      criticalRecommendation: 'Agregue requisitos de seguro de propiedad para el arrendador o negocie responsabilidades de seguridad compartidas. Considere requerir medidas de seguridad como cámaras, cerraduras o sistemas de seguridad.',
+      
+      cautionTitle: 'Riesgo de Aviso de Terminación',
+      cautionExplanation: 'Diez días es tiempo insuficiente para encontrar espacio de oficina alternativo, coordinar logística de mudanza y mantener continuidad del negocio. Esto crea riesgo operacional significativo.',
+      cautionRecommendation: 'Negocie por un período mínimo de aviso de 30 días. Agregue cláusulas que requieran razones específicas para terminación y procedimientos de resolución de disputas.',
+      
+      lowRiskTitle: 'Claridad de Costos de Servicios',
+      lowRiskExplanation: 'Tener servicios incluidos en la renta proporciona predictibilidad de costos y elimina facturas sorpresa de servicios. Esto es generalmente favorable para propósitos de presupuesto.',
+      lowRiskRecommendation: 'Confirme qué servicios específicos están incluidos y cualquier limitación de uso. Considere agregar cláusulas sobre interrupciones de servicios.',
+      
+      // Summary
+      summaryTitle: '4 puntos clave requieren atención',
+      summaryDesc: 'El contrato contiene riesgos significativos. Se recomienda negociar el período de aviso a 30 días y agregar requisitos de seguro de propiedad.',
+      
+      // Footer
+      analyzedIn: 'Analizado en 18 segundos',
+      tryNow: 'Probar Ahora',
+      closeDetails: 'Cerrar Detalles'
     }
   },
   tr: {
@@ -2217,6 +2453,65 @@ const translations = {
       passwordsDoNotMatch: 'Yeni şifreler eşleşmiyor',
       passwordTooShort: 'Şifre en az 6 karakter uzunluğunda olmalıdır',
       failedToUpdate: 'Güncelleme başarısız oldu'
+    },
+    
+    // Analysis Example Component
+    analysisExample: {
+      title: 'Ofis Kira Sözleşmesi',
+      documentType: 'Hukuki Belge Analizi',
+      aiReviewComplete: 'Yapay Zeka İncelemesi Tamamlandı',
+      riskAnalysis: 'Risk Analizi',
+      recommendations: 'Öneriler',
+      
+      // Contract clauses
+      clause1: 'Bölüm 4.2: "Kiracı her ayın 1\'ine kadar önceden haber vermeden kirayı ödemekle yükümlüdür."',
+      clause2: 'Bölüm 6.1: "Kiraya veren, kiracının mülkünün güvenliğinden sorumlu değildir."',
+      clause3: 'Bölüm 8.3: "Sözleşme kiraya veren tarafından 10 gün önceden haber verilerek tek taraflı feshedilebilir."',
+      clause4: 'Bölüm 3.1: "Aylık kira temel hizmetleri ve bina bakım hizmetlerini içerir."',
+      
+      // Risk highlights
+      prepaymentNoGuarantees: 'garantisiz peşin ödeme',
+      noLiabilityForProperty: 'mülk için sorumluluk yok',
+      shortNotice: 'sadece 10 gün haber',
+      includesUtilities: 'hizmetler dahil',
+      
+      // Risk levels
+      highRisk: 'Yüksek Risk',
+      critical: 'Kritik',
+      caution: 'Dikkat',
+      lowRisk: 'Düşük Risk',
+      
+      // Risk descriptions
+      highRiskDesc: 'Garantisiz peşin ödeme. 1 gün geç ödeme sözleşme feshi ve depozito kaybına yol açabilir.',
+      criticalDesc: 'Sorumluluk reddi. Hırsızlık veya mülk hasarı durumunda kiraya veren zararları karşılamaz.',
+      cautionDesc: 'Kısa haber süresi. 10 gün yeni ofis bulma ve taşınma için yetersiz.',
+      lowRiskDesc: 'Kiraya hizmetler dahil. Gizli hizmet ücretleri olmayan net maliyet yapısı.',
+      
+      // Detailed explanations (for modal)
+      highRiskTitle: 'Peşin Ödeme Riski',
+      highRiskExplanation: 'Bu madde her ayın 1\'inden önce ödemek şartı koyuyor ve hiçbir ödemesiz dönem vermiyor. Bu kiracı üzerinde önemli mali baskı yaratır ve erken feshe karşı koruma sağlamaz.',
+      highRiskRecommendation: '5 günlük ödemesiz dönem müzakere edin ve depozito koruma maddeleri talep edin. Geç ödeme nedeniyle fesih öncesi yazılı bildirim gerektiren bir madde eklemeyi düşünün.',
+      
+      criticalTitle: 'Mülk Güvenliği Riski',
+      criticalExplanation: 'Kiraya veren kiracının mülkünün güvenliği için tüm sorumluluğu tamamen reddediyor. Bu demektir ki ekipman, belgeler veya diğer değerli eşyalar çalınır veya zarar görürse hiçbir başvuru hakkınız yoktur.',
+      criticalRecommendation: 'Kiraya veren için mülk sigortası gereklilikleri ekleyin veya paylaşılan güvenlik sorumluluklarını müzakere edin. Kameralar, kilitler veya güvenlik sistemleri gibi güvenlik önlemleri gerektirmeyi düşünün.',
+      
+      cautionTitle: 'Fesih Bildirimi Riski',
+      cautionExplanation: 'On gün alternatif ofis alanı bulmak, taşıma lojistiğini koordine etmek ve iş sürekliliğini korumak için yetersiz zaman. Bu önemli operasyonel risk yaratır.',
+      cautionRecommendation: 'Minimum 30 günlük bildirim süresi için müzakere edin. Fesih için belirli nedenler gerektiren ve anlaşmazlık çözüm prosedürleri içeren maddeler ekleyin.',
+      
+      lowRiskTitle: 'Hizmet Maliyeti Netliği',
+      lowRiskExplanation: 'Kiraya hizmetlerin dahil olması maliyet öngörülebilirliği sağlar ve sürpriz hizmet faturalarını ortadan kaldırır. Bu genellikle bütçeleme amaçları için avantajlıdır.',
+      lowRiskRecommendation: 'Hangi belirli hizmetlerin dahil olduğunu ve kullanım sınırlamalarını onaylayın. Hizmet kesintileri hakkında maddeler eklemeyi düşünün.',
+      
+      // Summary
+      summaryTitle: '4 önemli nokta dikkat gerektiriyor',
+      summaryDesc: 'Sözleşme önemli riskler içeriyor. Bildirim süresini 30 güne çıkarmak ve mülk sigortası gerekliliklerini eklemek öneriliyor.',
+      
+      // Footer
+      analyzedIn: '18 saniyede analiz edildi',
+      tryNow: 'Şimdi Dene',
+      closeDetails: 'Detayları Kapat'
     }
   }
 };
