@@ -29,74 +29,106 @@ export default function RealisticAnalysisExample() {
       </div>
 
       <div className="p-4">
-        {/* Compact document preview */}
+        {/* Attractive document preview */}
         <div className="mb-4">
-          <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 leading-relaxed">
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-3 text-xs text-gray-700 leading-relaxed border border-slate-200">
+            <div className="flex items-center mb-2">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div>
+              <span className="font-semibold text-slate-800">Real Estate Purchase Agreement</span>
+            </div>
             <p className="mb-2">
-              <span className="font-medium text-gray-900">Payment Terms:</span> Client agrees to pay within 30 days. 
-              <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium ml-1">
-                Late fees: 2% monthly
+              <span className="font-medium text-slate-900">🏡 Property Value:</span> $750,000 
+              <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-medium ml-1">
+                ✓ Fair market price
               </span>
             </p>
             <p className="mb-2">
-              <span className="font-medium text-gray-900">Liability:</span> 
-              <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium ml-1">
-                No liability for damages
+              <span className="font-medium text-slate-900">💰 Deposit:</span> 10% down payment required
+              <span className="bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-medium ml-1">
+                ⚠️ Non-refundable clause
               </span>
             </p>
             <p>
-              <span className="font-medium text-gray-900">Termination:</span> 
-              <span className="bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-medium ml-1">
-                Immediate termination allowed
+              <span className="font-medium text-slate-900">📋 Inspection:</span> 
+              <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-medium ml-1">
+                🚨 Waived inspection rights
               </span>
             </p>
           </div>
         </div>
 
-        {/* Compact risk assessment */}
+        {/* Smart risk assessment */}
         <div className="space-y-2 mb-4">
-          <h4 className="text-sm font-semibold text-gray-800">Key Issues Found:</h4>
-          
-          <div className="bg-red-50 border-l-3 border-red-400 p-2 rounded-r">
-            <div className="flex items-center mb-1">
-              <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-              <span className="text-red-800 font-medium text-xs uppercase">High Risk</span>
+          <div className="flex items-center">
+            <h4 className="text-sm font-semibold text-gray-800">AI Insights:</h4>
+            <div className="ml-2 flex">
+              <div className="w-1 h-1 bg-blue-400 rounded-full mr-1 animate-bounce"></div>
+              <div className="w-1 h-1 bg-blue-400 rounded-full mr-1 animate-bounce" style={{animationDelay: '0.1s'}}></div>
+              <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
             </div>
-            <p className="text-red-800 text-xs">24% annual interest may be unenforceable</p>
+          </div>
+          
+          <div className="bg-gradient-to-r from-red-50 to-rose-100 border-l-3 border-red-400 p-2 rounded-r shadow-sm">
+            <div className="flex items-center mb-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full mr-2 shadow-sm"></div>
+              <span className="text-red-800 font-medium text-xs uppercase tracking-wider">🔥 Critical</span>
+            </div>
+            <p className="text-red-800 text-xs font-medium">Inspection waiver could hide $50K+ in repairs</p>
           </div>
 
-          <div className="bg-yellow-50 border-l-3 border-yellow-400 p-2 rounded-r">
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-100 border-l-3 border-yellow-400 p-2 rounded-r shadow-sm">
             <div className="flex items-center mb-1">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-              <span className="text-yellow-800 font-medium text-xs uppercase">Medium Risk</span>
+              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2 shadow-sm"></div>
+              <span className="text-yellow-800 font-medium text-xs uppercase tracking-wider">⚡ Caution</span>
             </div>
-            <p className="text-yellow-800 text-xs">No notice period for termination</p>
+            <p className="text-yellow-800 text-xs font-medium">Non-refundable deposit unusually high</p>
+          </div>
+
+          <div className="bg-gradient-to-r from-emerald-50 to-green-100 border-l-3 border-emerald-400 p-2 rounded-r shadow-sm">
+            <div className="flex items-center mb-1">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 shadow-sm"></div>
+              <span className="text-emerald-800 font-medium text-xs uppercase tracking-wider">✨ Good</span>
+            </div>
+            <p className="text-emerald-800 text-xs font-medium">Property price aligns with market value</p>
           </div>
         </div>
 
-        {/* Compact summary */}
-        <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-          <div className="flex items-center mb-2">
-            <svg className="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-blue-800 font-medium text-xs">Summary</span>
+        {/* Smart summary with score */}
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg p-3 border border-indigo-200 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <svg className="w-4 h-4 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span className="text-indigo-800 font-semibold text-xs">Risk Score</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-2xs text-indigo-600 mr-1">7.2/10</span>
+              <div className="w-8 h-1.5 bg-indigo-200 rounded-full overflow-hidden">
+                <div className="w-3/4 h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
+              </div>
+            </div>
           </div>
-          <p className="text-blue-700 text-xs">
-            <strong>3 issues found</strong> - Consider legal review before signing
+          <p className="text-indigo-700 text-xs leading-relaxed">
+            <strong>High-risk contract</strong> detected. Recommend negotiating inspection clause before proceeding.
           </p>
         </div>
 
-        {/* Compact action footer */}
+        {/* Enhanced action footer */}
         <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between">
           <div className="flex items-center text-gray-500">
-            <svg className="w-3 h-3 mr-1 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span className="text-xs">Done in 45s</span>
+            <div className="flex items-center">
+              <svg className="w-3 h-3 mr-1 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-xs">Analyzed in 12s</span>
+            </div>
+            <div className="ml-3 flex items-center">
+              <span className="text-xs text-emerald-600 font-medium">💎 95% accuracy</span>
+            </div>
           </div>
-          <button className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 transition-colors">
-            Try Now
+          <button className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded text-xs font-medium hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+            ✨ Analyze Now
           </button>
         </div>
       </div>
